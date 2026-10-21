@@ -92,7 +92,7 @@
                 <span class="border border-gray-200 bg-white text-gray-600 rounded-full px-4 py-1.5 text-xs font-medium shadow-sm">Men's Polo</span>
             </div>
 
-            <!-- PRODUCT GRID (This matches the Myntra Card exactly) -->
+            <!-- PRODUCT GRID -->
             <div id="productGrid" class="grid grid-cols-2 gap-3 pb-6">
                 <!-- Loader -->
                 <div class="col-span-2 text-center py-10 text-gray-400">
@@ -188,8 +188,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // GEMINI API KEY - Replace with yours if needed
-        const GEMINI_API_KEY = "AQ.Ab8RN6LaAB31zwbDdOLZn2YAI83bx6A_iRgDPtKkV4t2fPGKBQ";
+        // UPDATE: Nayi API Key yahan laga di gayi hai
+        const GEMINI_API_KEY = "AQ.Ab8RN6LuE71XhSTsNVoUJD5gzT_OjxfmZiPGli7JK1zBn-poGg";
 
         // --- 1. VIEW TOGGLE LOGIC ---
         window.showView = function(viewId) {
@@ -203,7 +203,7 @@
         let tapCount = 0;
         let tapTimer = null;
         document.getElementById('shopLogo').addEventListener('click', (e) => {
-            e.preventDefault(); // Prevents any accidental jumps/404s
+            e.preventDefault();
             tapCount++;
             if(tapCount === 1) {
                 tapTimer = setTimeout(() => { tapCount = 0; }, 2000); 
@@ -236,22 +236,14 @@
                 const item = doc.data();
                 const discount = item.mrp && item.sellingPrice ? Math.round(((item.mrp - item.sellingPrice) / item.mrp) * 100) : 0;
                 
-                // Matches the exact CSS styling from the screenshot cards
                 const cardHtml = `
                     <div class="bg-white rounded-[16px] shadow-sm border border-gray-100 overflow-hidden relative pb-3 flex flex-col justify-between">
                         <div class="relative bg-gray-50">
-                            <!-- IN STOCK Badge (Green) -->
                             <span class="absolute top-2 left-2 bg-[#e6f4ea] text-[#137333] text-[9px] font-extrabold px-2 py-0.5 rounded shadow-sm uppercase tracking-wide">IN STOCK</span>
-                            
-                            <!-- Heart Icon -->
                             <div class="absolute top-2 right-2 bg-white/90 rounded-full w-7 h-7 flex items-center justify-center shadow-sm text-gray-700 border border-gray-100">
                                 <i class="fa-regular fa-heart text-[13px]"></i>
                             </div>
-                            
-                            <!-- Product Image -->
                             <img src="${item.imageUrl}" class="w-full h-44 object-cover object-top">
-                            
-                            <!-- Rating Badge -->
                             <span class="absolute bottom-2 left-2 bg-white text-gray-800 text-[10px] font-bold px-1.5 py-0.5 rounded-sm shadow-sm border border-gray-100 flex items-center gap-1 z-10">
                                 5.0 <i class="fa-solid fa-star text-green-600 text-[9px]"></i> | 10
                             </span>
@@ -259,20 +251,14 @@
                         
                         <div class="px-3 pt-3">
                             <h4 class="text-[13px] text-gray-800 font-medium clamp-1 mb-1.5">${item.title}</h4>
-                            
-                            <!-- Pricing Row -->
                             <div class="flex items-center gap-1.5 mb-2">
                                 <span class="font-extrabold text-[15px] text-black">₹${item.sellingPrice}</span>
                                 <span class="text-[11px] text-gray-400 line-through">₹${item.mrp}</span>
                                 ${discount > 0 ? `<span class="text-[10px] text-green-600 font-bold bg-green-50 px-1 rounded">-${discount}%</span>` : ''}
                             </div>
-                            
-                            <!-- Size Label -->
                             <span class="border border-gray-200 text-gray-500 text-[9px] font-medium px-2 py-0.5 rounded-sm inline-block mb-3">
                                 ${item.sizes || 'Not specified'}
                             </span>
-                            
-                            <!-- Bottom Shop & Bag Row -->
                             <div class="flex justify-between items-center pt-1 mt-auto">
                                 <div class="flex items-center gap-1.5 text-[10px] text-gray-500 font-medium">
                                     <i class="fa-solid fa-store border border-gray-300 rounded p-1"></i> ${item.shopName || 'WOW COLLECTION'}
@@ -395,7 +381,7 @@
                 document.getElementById('uploadSection').classList.remove('hidden');
                 document.getElementById('reviewSection').classList.add('hidden');
                 document.getElementById('publishAllBtn').classList.add('hidden');
-                showView('storefrontView'); // Redirects back to home
+                showView('storefrontView'); 
             } catch(e) {
                 alert("Database Error: " + e.message);
             } finally {
