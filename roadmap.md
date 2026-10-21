@@ -1,3 +1,0 @@
-- [x] Stage every selected image and generate editable title, prices, and specs sequentially; verified with two real photos.
-- [x] Connect the supplied Firebase project and wire publishing without local fallback; preserve unsaved products on failure.
-- [ ] Verify successful database publishing and storefront read-back — blocked because the supplied project's Cloud Firestore API is disabled; owner must enable it and create the Firestore database.
