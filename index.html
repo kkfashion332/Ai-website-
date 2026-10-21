@@ -17,7 +17,7 @@
 </head>
 <body class="text-gray-800 pb-20 select-none">
 
-    <!-- 1. TOP PROMO BAR (From Screenshot) -->
+    <!-- 1. TOP PROMO BAR -->
     <div class="bg-[#006666] text-white text-[11px] text-center py-2 font-medium sticky top-0 z-50">
         Free delivery on orders above ₹499 · Use code KK10 for extra 10% off
     </div>
@@ -188,8 +188,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // UPDATE: Nayi API Key yahan laga di gayi hai
-        const GEMINI_API_KEY = "AQ.Ab8RN6LuE71XhSTsNVoUJD5gzT_OjxfmZiPGli7JK1zBn-poGg";
+        // Nayi API Key update kar di gayi hai bina kisi lock ke
+        const GEMINI_API_KEY = "AQ.Ab8RN6JBLsulF8TIRokgpwGo1wSuv5pkxfHmDnzUOH7C721ApQ";
 
         // --- 1. VIEW TOGGLE LOGIC ---
         window.showView = function(viewId) {
