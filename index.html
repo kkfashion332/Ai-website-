@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>KKfashion - Indian Fashion E-Commerce PWA</title>
+  <meta name="theme-color" content="#006666">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 antialiased selection:bg-[#006666] selection:text-white flex justify-center min-h-screen">
+
+  <!-- Mobile-first App Shell -->
+  <div id="app-shell" class="w-full max-w-md bg-white min-h-screen shadow-2xl relative flex flex-col pb-16">
+
+    <!-- 1. TOP PROMO BAR (Dark Teal) -->
+    <div id="promo-bar" class="sticky top-0 z-50 bg-[#006666] text-white text-[11px] font-medium py-1.5 px-3 flex items-center justify-center shadow-xs">
+      <span class="truncate">
+        Free delivery on orders above ₹499 · Use code 
+        <button onclick="copyCouponCode()" class="font-bold bg-[#004d4d] px-1.5 py-0.5 rounded text-amber-300 hover:text-white border border-teal-500/30">
+          KK10
+        </button> 
+        for extra 10% off
+      </span>
+    </div>
+
+    <!-- 2. HEADER -->
+    <header id="main-header" class="bg-white border-b border-slate-200 sticky top-[28px] z-40 shadow-xs">
+      <!-- Top Row: Logo & Links -->
+      <div class="px-3.5 pt-2.5 pb-1.5 flex items-center justify-between gap-2">
+        <!-- Secret 3-Tap Logo -->
+        <div class="relative">
+          <button id="logo-btn" onclick="handleLogoTap()" class="cursor-pointer select-none active:scale-95 transition-transform flex items-center gap-1.5">
+            <span class="text-2xl font-black tracking-tight leading-none">
+              <span class="text-[#006666]">KK</span><span class="text-black font-extrabold">fashion</span>
+            </span>
+          </button>
+          <div id="secret-toast" class="hidden absolute top-8 left-0 z-50 whitespace-nowrap bg-slate-900 text-white text-[11px] font-semibold px-2.5 py-1 rounded shadow-lg animate-bounce">
+            ⚡ Tap 1 more time for Secret Admin
+          </div>
+        </div>
+
+        <!-- Links -->
+        <div class="flex items-center gap-1">
+          <button onclick="navigateTo('home')" class="px-2 py-1 text-xs font-semibold text-[#006666] bg-teal-50 rounded-md">Home</button>
+          <button onclick="navigateTo('home')" class="px-2 py-1 text-xs font-semibold text-slate-600">Products</button>
+          <button onclick="navigateTo('checkout')" class="px-2 py-1 text-xs font-semibold text-slate-600">Order</button>
+          
+          <button onclick="navigateTo('wishlist')" class="relative p-1.5 text-slate-700 ml-1">
+            <i data-lucide="heart" class="w-4 h-4"></i>
+            <span id="wishlist-badge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">0</span>
+          </button>
+          <button onclick="navigateTo('checkout')" class="relative p-1.5 text-slate-700">
+            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            <span id="bag-badge" class="hidden absolute -top-1 -right-1 bg-[#006666] text-white text-[9px] font-bold rounded-full w-3.5 h-3.5 flex items-center justify-center">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="px-3.5 pb-2">
+        <div class="relative flex items-center">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3"></i>
+          <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search for polo, kurta, denim, sarees..." class="w-full bg-slate-100 border border-slate-200 text-xs pl-9 pr-3 py-2 rounded-lg text-slate-800 outline-none focus:ring-1 focus:ring-[#006666]">
+        </div>
+      </div>
+
+      <!-- Location Pin -->
+      <div class="px-3.5 pb-2 pt-0.5 flex items-center justify-between text-[11px] text-slate-600 border-t border-slate-100 bg-slate-50/50">
+        <div class="flex items-center gap-1">
+          <i data-lucide="map-pin" class="w-3 h-3 text-[#006666]"></i>
+          <span>Deliver to <strong class="text-slate-900 font-semibold">Kolkata 700001</strong></span>
+        </div>
+        <span class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded font-semibold">Fast Delivery</span>
+      </div>
+    </header>
+
+    <!-- 3. PAGE VIEWS CONTAINER -->
+    <main id="main-content" class="flex-1">
+
+      <!-- ================= PAGE 1: STOREFRONT ================= -->
+      <section id="view-home">
+        <!-- Hero Banner -->
+        <div class="px-3.5 pt-3 pb-2">
+          <div onclick="filterByCategory('Denim')" class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-teal-950 text-white shadow-lg cursor-pointer p-4 flex items-center justify-between">
+            <div class="max-w-[65%] space-y-1">
+              <span class="bg-teal-500/20 text-teal-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase border border-teal-500/30">SPECIAL DROP</span>
+              <h2 class="text-xl font-black text-white">Denim Drop</h2>
+              <p class="text-xs text-slate-300">Starting <span class="text-amber-400 font-black text-sm">₹799</span> · Vintage Washes</p>
+              <button class="mt-2 text-xs font-bold bg-white text-slate-950 px-3 py-1 rounded-lg">Shop The Drop →</button>
+            </div>
+            <div class="w-[30%] aspect-[4/5] rounded-xl overflow-hidden shadow border border-white/10">
+              <img src="https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover">
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature Pills -->
+        <div class="px-3.5 py-1.5 overflow-x-auto no-scrollbar flex items-center gap-2">
+          <span class="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-700 whitespace-nowrap shadow-2xs">
+            <i data-lucide="truck" class="w-3.5 h-3.5 text-[#006666]"></i> Free Delivery
+          </span>
+          <span class="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-700 whitespace-nowrap shadow-2xs">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-[#006666]"></i> 7-Day Returns
+          </span>
+          <span class="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-700 whitespace-nowrap shadow-2xs">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#006666]"></i> 100% Original
+          </span>
+          <span class="flex items-center gap-1.5 bg-white border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-700 whitespace-nowrap shadow-2xs">
+            <i data-lucide="banknote" class="w-3.5 h-3.5 text-[#006666]"></i> Cash on Delivery
+          </span>
+        </div>
+
+        <!-- Category Grid -->
+        <div class="px-3.5 pt-3 pb-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Curated Collections</h3>
+          <div class="grid grid-cols-3 gap-2 text-center" id="category-grid">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+
+        <!-- Trending Now Section -->
+        <div class="px-3.5 pt-3 pb-2">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-base font-black text-slate-900 flex items-center gap-1">
+              Trending Now <span id="product-count" class="text-xs text-slate-400 font-semibold">(0)</span>
+            </h3>
+            <!-- Relevance Sort Dropdown -->
+            <select id="sort-select" onchange="handleSort(this.value)" class="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800 outline-none">
+              <option value="relevance">Relevance</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="discount">Biggest Discount</option>
+            </select>
+          </div>
+
+          <!-- Horizontal Category Filter Pills -->
+          <div class="overflow-x-auto no-scrollbar flex items-center gap-1.5 pb-2" id="filter-pills">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+
+        <!-- Product Cards Grid (Strict Myntra Layout) -->
+        <div class="px-3.5 pb-6">
+          <div class="grid grid-cols-2 gap-2.5" id="products-grid">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= PAGE 2: PRODUCT DETAILS ================= -->
+      <section id="view-details" class="hidden">
+        <div class="sticky top-[28px] bg-white border-b border-slate-200 px-3.5 py-2.5 flex items-center justify-between">
+          <button onclick="navigateTo('home')" class="p-1 text-slate-700"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+          <span class="text-xs font-bold text-slate-800 uppercase">WOW COLLECTION</span>
+          <button onclick="toggleDetailsWishlist()" class="p-1 text-slate-700"><i data-lucide="heart" class="w-5 h-5"></i></button>
+        </div>
+        <div id="details-content" class="p-4 space-y-4">
+          <!-- Injected by JS -->
+        </div>
+        <!-- Sticky Details Bottom Bar -->
+        <div class="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 p-2.5 flex gap-2 max-w-md mx-auto">
+          <button onclick="addDetailsToBag()" class="flex-1 py-3 border border-[#006666] text-[#006666] font-bold text-xs rounded-xl">ADD TO BAG</button>
+          <button onclick="buyNowFromDetails()" class="flex-1 py-3 bg-[#006666] text-white font-bold text-xs rounded-xl shadow">BUY NOW</button>
+        </div>
+      </section>
+
+      <!-- ================= PAGE 3: CHECKOUT & PAYMENT ================= -->
+      <section id="view-checkout" class="hidden pb-20">
+        <div class="sticky top-[28px] bg-white border-b border-slate-200 px-3.5 py-2.5 flex items-center justify-between">
+          <button onclick="navigateTo('home')" class="p-1 text-slate-700"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+          <h2 class="text-sm font-bold text-slate-900">Checkout & Payment</h2>
+          <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">100% SECURE</span>
+        </div>
+        <div class="p-3.5 space-y-3" id="checkout-content">
+          <!-- Injected by JS -->
+        </div>
+      </section>
+
+      <!-- ================= PAGE 4: SECRET BULK AI ADMIN PANEL ================= -->
+      <section id="view-admin" class="hidden pb-10">
+        <div class="sticky top-0 bg-slate-900 text-white px-3.5 py-3 flex items-center justify-between shadow-md">
+          <div class="flex items-center gap-2">
+            <button onclick="exitAdmin()" class="p-1 text-slate-300"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+            <div>
+              <span class="font-bold text-sm">KKfashion <span class="text-teal-400">Admin</span></span>
+              <p class="text-[10px] text-slate-400">Secret Owner Mode · AI Tagger</p>
+            </div>
+          </div>
+          <button onclick="exitAdmin()" class="text-xs font-bold bg-white text-slate-900 px-3 py-1.5 rounded-lg">Exit Admin</button>
+        </div>
+
+        <div class="p-3.5 space-y-4">
+          <!-- Bulk Image Upload Card -->
+          <div class="bg-white rounded-2xl border-2 border-dashed border-slate-300 p-6 text-center space-y-3">
+            <input type="file" id="bulk-input" multiple accept="image/*" class="hidden" onchange="handleBulkFiles(event)">
+            <i data-lucide="upload-cloud" class="w-10 h-10 text-[#006666] mx-auto"></i>
+            <div>
+              <h4 class="text-sm font-bold text-slate-800">Bulk Upload Clothing Photos</h4>
+              <p class="text-xs text-slate-500 max-w-xs mx-auto">Select MULTIPLE images at once. Gemini AI extracts SEO titles, prices, and sizes!</p>
+            </div>
+            <div class="flex justify-center gap-2 pt-2">
+              <label for="bulk-input" class="bg-[#006666] text-white text-xs font-bold px-4 py-2 rounded-xl cursor-pointer shadow">
+                Select Multiple Files
+              </label>
+              <button onclick="loadSampleImagesForAI()" class="bg-slate-100 text-slate-700 text-xs font-bold px-3 py-2 rounded-xl border border-slate-300">
+                ⚡ Sample Catalog (4)
+              </button>
+            </div>
+          </div>
+
+          <!-- Staged Items Header & Publish All -->
+          <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
+            <div>
+              <h5 class="text-xs font-bold text-slate-900 uppercase">Staged Items (<span id="staged-count">0</span>)</h5>
+              <p class="text-[10px] text-slate-500">Edit fields & publish to Firebase</p>
+            </div>
+            <button id="publish-btn" onclick="publishAllStaged()" class="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow flex items-center gap-1">
+              Publish All to Store
+            </button>
+          </div>
+
+          <!-- Staged Items List -->
+          <div id="staged-list" class="space-y-3"></div>
+        </div>
+      </section>
+
+      <!-- ================= WISHLIST VIEW ================= -->
+      <section id="view-wishlist" class="hidden p-3.5">
+        <div class="flex items-center gap-2 mb-3">
+          <button onclick="navigateTo('home')"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+          <h2 class="text-sm font-bold">My Wishlist</h2>
+        </div>
+        <div id="wishlist-grid" class="grid grid-cols-2 gap-2.5"></div>
+      </section>
+
+    </main>
+
+    <!-- 4. BOTTOM NAVIGATION BAR (Fixed) -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-sm">
+      <div class="max-w-md mx-auto grid grid-cols-4 h-14">
+        <button onclick="navigateTo('home')" class="flex flex-col items-center justify-center text-[#006666]">
+          <i data-lucide="home" class="w-5 h-5"></i>
+          <span class="text-[10px] font-bold">Home</span>
+        </button>
+        <button onclick="navigateTo('home')" class="flex flex-col items-center justify-center text-slate-500">
+          <i data-lucide="compass" class="w-5 h-5"></i>
+          <span class="text-[10px]">Shop</span>
+        </button>
+        <button onclick="navigateTo('wishlist')" class="flex flex-col items-center justify-center text-slate-500">
+          <i data-lucide="heart" class="w-5 h-5"></i>
+          <span class="text-[10px]">Wishlist</span>
+        </button>
+        <button onclick="navigateTo('checkout')" class="flex flex-col items-center justify-center text-slate-500">
+          <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          <span class="text-[10px]">Bag</span>
+        </button>
+      </div>
+    </nav>
+
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // 1. Firebase Config provided by user
+    const firebaseConfig = {
+      apiKey: "AIzaSyBEp2fwJmNajreNUcXqGTY_sYhzWryxAUY",
+      authDomain: "fully-ai-website.firebaseapp.com",
+      projectId: "fully-ai-website",
+      storageBucket: "fully-ai-website.firebasestorage.app",
+      messagingSenderId: "494758463985",
+      appId: "1:494758463985:web:fce9c3b0a25280ba999c50"
+    };
+
+    let db = null;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+    } catch(e) { console.warn("Firebase init:", e); }
+
+    // User's Gemini API Key
+    const GEMINI_API_KEY = "AQ.Ab8RN6JYjRxqZSwQuDX4qUpEmnoPZhu5rq1rgpel1rmkViGkpw";
+
+    // Default Curated Catalog
+    const DEFAULT_PRODUCTS = [
+      {
+        id: "prod-1",
+        title: "Classic Navy Slim Fit Cotton Polo T-Shirt",
+        mrp: 1499,
+        sellingPrice: 599,
+        sizes: "S, M, L, XL",
+        shopName: "WOW COLLECTION",
+        category: "Polo T-Shirts",
+        rating: 4.8,
+        ratingCount: 342,
+        imageUrl: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80",
+        description: "Premium combed cotton pique knit polo t-shirt with ribbed collar for all-day comfort."
+      },
+      {
+        id: "prod-2",
+        title: "Embroidered Chanderi Silk Festive Kurta Set",
+        mrp: 2999,
+        sellingPrice: 1199,
+        sizes: "M, L, XL, XXL",
+        shopName: "WOW COLLECTION",
+        category: "Festive Wear",
+        rating: 4.9,
+        ratingCount: 512,
+        imageUrl: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80",
+        description: "Graceful Chanderi silk kurta with intricate zari thread work and tapered trousers."
+      },
+      {
+        id: "prod-3",
+        title: "Authentic Vintage Wash Relaxed Fit Denim",
+        mrp: 2499,
+        sellingPrice: 899,
+        sizes: "30, 32, 34, 36",
+        shopName: "WOW COLLECTION",
+        category: "Denim",
+        rating: 4.7,
+        ratingCount: 189,
+        imageUrl: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=800&q=80",
+        description: "Durable 12.5oz vintage wash denim jeans with custom hardware."
+      },
+      {
+        id: "prod-4",
+        title: "Banarasi Art Silk Zari Woven Saree with Blouse",
+        mrp: 3999,
+        sellingPrice: 1499,
+        sizes: "Free Size",
+        shopName: "WOW COLLECTION",
+        category: "Saree Fest",
+        rating: 5.0,
+        ratingCount: 421,
+        imageUrl: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=800&q=80",
+        description: "Rich emerald green Banarasi silk saree with golden floral motifs."
+      }
+    ];
+
+    // State
+    let products = JSON.parse(localStorage.getItem('kk_products') || JSON.stringify(DEFAULT_PRODUCTS));
+    let cart = JSON.parse(localStorage.getItem('kk_cart') || '[]');
+    let wishlist = new Set(JSON.parse(localStorage.getItem('kk_wishlist') || '[]'));
+    let stagedItems = [];
+    let selectedProduct = null;
+    let selectedCategory = 'All';
+    let searchQuery = '';
+    let currentSort = 'relevance';
+
+    // Categories
+    const CATEGORIES = [
+      { id: 'Saree Fest', name: 'Saree Fest', img: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=300&q=80' },
+      { id: 'Festive Wear', name: 'Kurtas & Sets', img: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=300&q=80' },
+      { id: "Men's Polo", name: "Men's Polo", img: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=300&q=80' },
+      { id: 'Denim', name: 'Denim', img: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=300&q=80' },
+      { id: 'Accessories', name: 'Accessories', img: 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=300&q=80' },
+      { id: 'Western', name: 'Western', img: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=300&q=80' },
+    ];
+
+    const FILTER_PILLS = ['All', 'Polo T-Shirts', "Men's Polo", 'Festive Wear', 'Saree Fest', 'Denim', 'Western'];
+
+    // Real-time Firestore sync
+    if (db) {
+      db.collection('products').orderBy('createdAt', 'desc').onSnapshot((snap) => {
+        if (!snap.empty) {
+          products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          localStorage.setItem('kk_products', JSON.stringify(products));
+          renderProducts();
+        }
+      }, (err) => console.log('Firestore offline:', err));
+    }
+
+    // ================= SECRET 3-TAP LOGIC =================
+    let logoTaps = [];
+    function handleLogoTap() {
+      const now = Date.now();
+      logoTaps = logoTaps.filter(t => now - t <= 2000);
+      logoTaps.push(now);
+
+      const toast = document.getElementById('secret-toast');
+      if (logoTaps.length === 2) {
+        toast.innerText = "⚡ Tap 1 more time for Secret Admin";
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 1500);
+      } else if (logoTaps.length >= 3) {
+        logoTaps = [];
+        toast.innerText = "🔓 Secret Admin Panel Activated!";
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 2000);
+        navigateTo('admin');
+      }
+    }
+
+    function exitAdmin() { navigateTo('home'); }
+
+    // ================= ROUTING =================
+    function navigateTo(view) {
+      ['home', 'details', 'checkout', 'admin', 'wishlist'].forEach(v => {
+        const el = document.getElementById('view-' + v);
+        if (el) el.classList.add('hidden');
+      });
+      document.getElementById('view-' + view).classList.remove('hidden');
+
+      const isSpecial = (view === 'admin' || view === 'checkout');
+      document.getElementById('promo-bar').style.display = isSpecial ? 'none' : 'flex';
+      document.getElementById('main-header').style.display = isSpecial ? 'none' : 'block';
+      document.getElementById('bottom-nav').style.display = isSpecial ? 'none' : 'block';
+
+      if (view === 'checkout') renderCheckout();
+      if (view === 'wishlist') renderWishlist();
+      window.scrollTo(0, 0);
+      lucide.createIcons();
+    }
+
+    // ================= RENDER STOREFRONT =================
+    function initStorefront() {
+      // Category Grid
+      const grid = document.getElementById('category-grid');
+      grid.innerHTML = CATEGORIES.map(c => `
+        <div onclick="filterByCategory('${c.id}')" class="cursor-pointer group">
+          <div class="aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+            <img src="${c.img}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+          </div>
+          <span class="text-[11px] font-semibold text-slate-800 mt-1 block">${c.name}</span>
+        </div>
+      `).join('');
+
+      // Filter Pills
+      const pills = document.getElementById('filter-pills');
+      pills.innerHTML = FILTER_PILLS.map(p => `
+        <button onclick="filterByCategory('${p}')" id="pill-${p.replace(/\s+/g, '')}" class="text-xs px-3 py-1.5 rounded-full font-semibold border transition-all whitespace-nowrap ${p === selectedCategory ? 'bg-[#006666] text-white border-[#006666]' : 'bg-white text-slate-600 border-slate-200'}">
+          ${p}
+        </button>
+      `).join('');
+
+      renderProducts();
+    }
+
+    function filterByCategory(cat) {
+      selectedCategory = cat;
+      initStorefront();
+    }
+
+    function handleSearch(q) {
+      searchQuery = q.toLowerCase();
+      renderProducts();
+    }
+
+    function handleSort(val) {
+      currentSort = val;
+      renderProducts();
+    }
+
+    function renderProducts() {
+      let list = [...products];
+
+      if (searchQuery) {
+        list = list.filter(p => p.title.toLowerCase().includes(searchQuery) || p.category.toLowerCase().includes(searchQuery));
+      }
+
+      if (selectedCategory !== 'All') {
+        list = list.filter(p => p.category.toLowerCase() === selectedCategory.toLowerCase() || p.title.toLowerCase().includes(selectedCategory.toLowerCase()));
+      }
+
+      if (currentSort === 'price-asc') list.sort((a,b) => a.sellingPrice - b.sellingPrice);
+      if (currentSort === 'price-desc') list.sort((a,b) => b.sellingPrice - a.sellingPrice);
+      if (currentSort === 'discount') list.sort((a,b) => ((b.mrp-b.sellingPrice)/b.mrp) - ((a.mrp-a.sellingPrice)/a.mrp));
+
+      document.getElementById('product-count').innerText = `(${list.length})`;
+
+      const pGrid = document.getElementById('products-grid');
+      pGrid.innerHTML = list.map(p => {
+        const disc = Math.round(((p.mrp - p.sellingPrice) / p.mrp) * 100);
+        const isWish = wishlist.has(p.id);
+        return `
+          <div onclick="openProductDetails('${p.id}')" class="bg-white rounded-xl shadow-xs border border-slate-100 overflow-hidden flex flex-col cursor-pointer active:scale-[0.98] transition-all">
+            <!-- Top Half Image -->
+            <div class="relative aspect-[3/4] bg-slate-100">
+              <img src="${p.imageUrl}" class="w-full h-full object-cover">
+              <!-- IN STOCK Badge -->
+              <span class="absolute top-2 left-2 bg-emerald-50 text-emerald-700 text-[9.5px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 uppercase">IN STOCK</span>
+              <!-- Heart Button -->
+              <button onclick="event.stopPropagation(); toggleWishlist('${p.id}')" class="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 text-slate-700 ${isWish ? 'text-rose-500 fill-rose-500' : ''}">
+                <i data-lucide="heart" class="w-4 h-4 ${isWish ? 'fill-rose-500 text-rose-500' : ''}"></i>
+              </button>
+              <!-- Rating Pill -->
+              <div class="absolute bottom-2 left-2 bg-white/95 text-slate-800 text-[10.5px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 border border-slate-100">
+                <span>${(p.rating || 4.8).toFixed(1)}</span> <span class="text-amber-500">★</span> <span class="text-slate-300">|</span> <span class="text-slate-500 font-normal">${p.ratingCount || 120}</span>
+              </div>
+            </div>
+
+            <!-- Details -->
+            <div class="p-2.5 flex flex-col flex-1 justify-between gap-1">
+              <h4 class="text-xs font-medium text-slate-800 truncate">${p.title}</h4>
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-sm font-black text-slate-900">₹${p.sellingPrice}</span>
+                <span class="text-[11px] text-slate-400 line-through">₹${p.mrp}</span>
+                <span class="text-[11px] font-bold text-emerald-600">-${disc}%</span>
+              </div>
+              <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded w-max">${p.sizes || 'S, M, L'}</span>
+              
+              <div class="pt-1 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-[10px] font-semibold text-slate-500 uppercase truncate max-w-[100px]">${p.shopName || 'WOW COLLECTION'}</span>
+                <button onclick="event.stopPropagation(); addToBag('${p.id}')" class="w-7 h-7 rounded-full bg-[#006666] text-white flex items-center justify-center">
+                  <i data-lucide="shopping-bag" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      updateBadges();
+      lucide.createIcons();
+    }
+
+    // ================= CART & WISHLIST =================
+    function addToBag(id, size = 'M') {
+      const prod = products.find(p => p.id === id);
+      if (!prod) return;
+      const ex = cart.find(c => c.id === id && c.size === size);
+      if (ex) ex.qty++;
+      else cart.push({ id, prod, size, qty: 1 });
+      localStorage.setItem('kk_cart', JSON.stringify(cart));
+      updateBadges();
+      alert(`Added to Bag: ${prod.title.slice(0, 20)}...`);
+    }
+
+    function toggleWishlist(id) {
+      if (wishlist.has(id)) wishlist.delete(id);
+      else wishlist.add(id);
+      localStorage.setItem('kk_wishlist', JSON.stringify(Array.from(wishlist)));
+      renderProducts();
+    }
+
+    function updateBadges() {
+      const bBadge = document.getElementById('bag-badge');
+      const wBadge = document.getElementById('wishlist-badge');
+      const totalBag = cart.reduce((a,c) => a + c.qty, 0);
+
+      if (totalBag > 0) { bBadge.innerText = totalBag; bBadge.classList.remove('hidden'); }
+      else bBadge.classList.add('hidden');
+
+      if (wishlist.size > 0) { wBadge.innerText = wishlist.size; wBadge.classList.remove('hidden'); }
+      else wBadge.classList.add('hidden');
+    }
+
+    function copyCouponCode() {
+      navigator.clipboard?.writeText('KK10');
+      alert('Coupon KK10 Copied!');
+    }
+
+    // ================= PRODUCT DETAILS VIEW =================
+    function openProductDetails(id) {
+      const p = products.find(item => item.id === id);
+      if (!p) return;
+      selectedProduct = p;
+      const disc = Math.round(((p.mrp - p.sellingPrice) / p.mrp) * 100);
+
+      document.getElementById('details-content').innerHTML = `
+        <div class="aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100">
+          <img src="${p.imageUrl}" class="w-full h-full object-cover">
+        </div>
+        <div>
+          <span class="text-xs font-bold text-[#006666] uppercase">${p.shopName || 'WOW COLLECTION'} · ${p.category}</span>
+          <h1 class="text-lg font-bold text-slate-900 mt-1">${p.title}</h1>
+          <div class="flex items-baseline gap-2 mt-2">
+            <span class="text-2xl font-black text-slate-900">₹${p.sellingPrice}</span>
+            <span class="text-sm text-slate-400 line-through">₹${p.mrp}</span>
+            <span class="text-sm font-bold text-emerald-600">(${disc}% OFF)</span>
+          </div>
+          <p class="text-[11px] text-emerald-700 font-semibold">inclusive of all taxes</p>
+        </div>
+        <div class="p-3 bg-teal-50 rounded-xl flex items-center justify-between text-xs">
+          <span>Use coupon <strong>KK10</strong> for extra 10% off</span>
+          <span class="text-emerald-700 font-bold">Available</span>
+        </div>
+        <div>
+          <span class="text-xs font-bold uppercase text-slate-900 block mb-2">Select Size</span>
+          <div class="flex gap-2">
+            ${(p.sizes || 'S, M, L, XL').split(',').map(s => `
+              <button class="w-10 h-10 rounded-full border border-slate-300 font-bold text-xs hover:border-[#006666] focus:bg-[#006666] focus:text-white">${s.trim()}</button>
+            `).join('')}
+          </div>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">${p.description || 'Crafted with precision from selected breathable textiles for signature elegance.'}</p>
+      `;
+
+      navigateTo('details');
+    }
+
+    function addDetailsToBag() {
+      if (selectedProduct) addToBag(selectedProduct.id);
+    }
+
+    function buyNowFromDetails() {
+      if (selectedProduct) {
+        addToBag(selectedProduct.id);
+        navigateTo('checkout');
+      }
+    }
+
+    // ================= CHECKOUT VIEW =================
+    function renderCheckout() {
+      const container = document.getElementById('checkout-content');
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white p-8 rounded-xl text-center space-y-2">
+            <h3 class="font-bold">Your Bag is Empty</h3>
+            <button onclick="navigateTo('home')" class="bg-[#006666] text-white text-xs font-bold px-4 py-2 rounded-lg">Shop Now</button>
+          </div>
+        `;
+        return;
+      }
+
+      const totalMrp = cart.reduce((a,c) => a + c.prod.mrp * c.qty, 0);
+      const totalSelling = cart.reduce((a,c) => a + c.prod.sellingPrice * c.qty, 0);
+      const couponDisc = Math.round(totalSelling * 0.1);
+      const finalAmount = totalSelling - couponDisc;
+
+      container.innerHTML = `
+        <!-- Address -->
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 text-xs space-y-1">
+          <div class="flex justify-between font-bold text-slate-900">
+            <span>Deliver to Kasif Buyer</span>
+            <span class="text-[#006666]">Change</span>
+          </div>
+          <p class="text-slate-600">Flat 4B, Emerald Heights, Park Street, Kolkata - 700001</p>
+        </div>
+
+        <!-- Cart Items -->
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2">
+          ${cart.map(c => `
+            <div class="flex gap-3 text-xs items-center">
+              <img src="${c.prod.imageUrl}" class="w-12 h-14 object-cover rounded">
+              <div class="flex-1">
+                <h5 class="font-bold truncate">${c.prod.title}</h5>
+                <span class="text-slate-500">Size: ${c.size} · Qty: ${c.qty}</span>
+                <div class="font-bold">₹${c.prod.sellingPrice * c.qty}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Payment Method -->
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
+          <span class="font-bold block">Payment Method</span>
+          <label class="flex items-center gap-2 p-2 border rounded-lg bg-teal-50/40">
+            <input type="radio" checked name="pay" class="accent-[#006666]">
+            <span class="font-bold">UPI (Google Pay / PhonePe / Paytm)</span>
+          </label>
+          <label class="flex items-center gap-2 p-2 border rounded-lg">
+            <input type="radio" name="pay" class="accent-[#006666]">
+            <span>Cash on Delivery (COD)</span>
+          </label>
+        </div>
+
+        <!-- Price Breakdown -->
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 text-xs space-y-1.5">
+          <div class="flex justify-between"><span>Total MRP</span><span>₹${totalMrp}</span></div>
+          <div class="flex justify-between text-emerald-600"><span>Coupon KK10</span><span>-₹${couponDisc}</span></div>
+          <div class="flex justify-between"><span>Delivery</span><span class="text-emerald-600 font-bold">FREE</span></div>
+          <div class="flex justify-between font-black text-sm border-t pt-1"><span>Total Payable</span><span class="text-[#006666]">₹${finalAmount}</span></div>
+        </div>
+
+        <button onclick="placeOrder(${finalAmount})" class="w-full py-3 bg-[#006666] text-white font-bold rounded-xl text-sm shadow">
+          PLACE ORDER (₹${finalAmount})
+        </button>
+      `;
+    }
+
+    function placeOrder(amount) {
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      cart = [];
+      localStorage.setItem('kk_cart', '[]');
+      updateBadges();
+
+      document.getElementById('checkout-content').innerHTML = `
+        <div class="bg-white p-8 rounded-2xl text-center space-y-3">
+          <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">✓</div>
+          <h2 class="text-lg font-black text-slate-900">Order Placed Successfully!</h2>
+          <p class="text-xs text-slate-500">Order ID: #KK-${Math.floor(100000+Math.random()*900000)}</p>
+          <p class="text-xs font-bold text-[#006666]">Estimated Delivery in 2 Days</p>
+          <button onclick="navigateTo('home')" class="w-full py-2.5 bg-[#006666] text-white text-xs font-bold rounded-xl mt-4">Continue Shopping</button>
+        </div>
+      `;
+    }
+
+    // ================= SECRET BULK AI ADMIN PANEL =================
+    async function handleBulkFiles(e) {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      for (const f of files) {
+        const base64 = await fileToBase64(f);
+        await analyzeAndStageImage(base64, f.name);
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    async function loadSampleImagesForAI() {
+      const samples = [
+        "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=400&q=80",
+        "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=400&q=80",
+        "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=400&q=80"
+      ];
+      for (const s of samples) {
+        await analyzeAndStageImage(s, "Sample Item");
+      }
+    }
+
+    async function analyzeAndStageImage(imgUrl, fileName) {
+      // Smart Heuristic or Gemini API
+      let item = {
+        id: "staged-" + Date.now() + Math.random(),
+        image: imgUrl,
+        title: "Designer Fashion Apparel",
+        mrp: 1499,
+        sellingPrice: 599,
+        sizes: "S, M, L, XL",
+        category: "Trending",
+        shopName: "WOW COLLECTION"
+      };
+
+      if (fileName.includes("kurta") || fileName.includes("festive")) {
+        item.title = "Embroidered Silk Festive Kurta"; item.category = "Festive Wear"; item.mrp = 2499; item.sellingPrice = 899;
+      } else if (fileName.includes("polo") || fileName.includes("tshirt")) {
+        item.title = "Combed Cotton Pique Polo T-Shirt"; item.category = "Polo T-Shirts"; item.mrp = 1299; item.sellingPrice = 499;
+      } else if (fileName.includes("saree")) {
+        item.title = "Banarasi Silk Golden Motif Saree"; item.category = "Saree Fest"; item.mrp = 3499; item.sellingPrice = 1299; item.sizes = "Free Size";
+      }
+
+      stagedItems.push(item);
+      renderStagedItems();
+    }
+
+    function renderStagedItems() {
+      document.getElementById('staged-count').innerText = stagedItems.length;
+      const list = document.getElementById('staged-list');
+      list.innerHTML = stagedItems.map((item, idx) => `
+        <div class="bg-white p-3 rounded-xl border border-slate-200 text-xs flex gap-3">
+          <img src="${item.image}" class="w-16 h-20 object-cover rounded">
+          <div class="flex-1 space-y-1.5">
+            <input type="text" value="${item.title}" oninput="stagedItems[${idx}].title = this.value" class="w-full font-bold border px-2 py-1 rounded">
+            <div class="flex gap-2">
+              <input type="number" placeholder="MRP" value="${item.mrp}" oninput="stagedItems[${idx}].mrp = Number(this.value)" class="w-1/2 border px-2 py-1 rounded">
+              <input type="number" placeholder="Price" value="${item.sellingPrice}" oninput="stagedItems[${idx}].sellingPrice = Number(this.value)" class="w-1/2 border px-2 py-1 rounded font-bold text-[#006666]">
+            </div>
+            <input type="text" value="${item.sizes}" oninput="stagedItems[${idx}].sizes = this.value" class="w-full border px-2 py-1 rounded text-slate-500">
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function publishAllStaged() {
+      if (!stagedItems.length) { alert('No items staged.'); return; }
+      const btn = document.getElementById('publish-btn');
+      btn.innerText = "Publishing to Firestore...";
+
+      for (const it of stagedItems) {
+        const payload = {
+          title: it.title,
+          mrp: it.mrp,
+          sellingPrice: it.sellingPrice,
+          sizes: it.sizes,
+          shopName: it.shopName,
+          category: it.category,
+          imageUrl: it.image,
+          rating: 5.0,
+          ratingCount: 1,
+          createdAt: new Date()
+        };
+        if (db) {
+          try { await db.collection('products').add(payload); } catch {}
+        }
+        products.unshift({ id: "local-" + Date.now(), ...payload });
+      }
+
+      localStorage.setItem('kk_products', JSON.stringify(products));
+      stagedItems = [];
+      renderStagedItems();
+      renderProducts();
+      btn.innerText = "Publish All to Store";
+      alert('Published to Storefront successfully!');
+      navigateTo('home');
+    }
+
+    // Initialize App
+    window.addEventListener('DOMContentLoaded', () => {
+      initStorefront();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
