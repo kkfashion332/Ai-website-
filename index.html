@@ -18,87 +18,64 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: '#1e3a8a', // Navy Blue
-                        secondary: '#3b82f6', // Light Blue
-                        accent: '#f59e0b', // Orange/Yellow accent
+                        primary: '#1e3a8a', 
+                        secondary: '#3b82f6', 
+                        accent: '#f59e0b', 
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .page-section { display: none; }
+        .page-section.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
 
     <!-- Sidebar -->
     <aside class="w-64 bg-[#0f172a] text-white flex flex-col h-full transition-all duration-300 z-20">
-        <!-- Sidebar Menu -->
         <nav class="flex-1 overflow-y-auto py-4">
             <ul class="space-y-1">
                 <li>
-                    <a href="#" class="flex items-center px-6 py-3 bg-blue-600 text-white border-l-4 border-white">
+                    <a href="#" id="nav-dashboard" onclick="switchTab('dashboard')" class="nav-link flex items-center px-6 py-3 bg-blue-600 text-white border-l-4 border-white transition">
                         <i class="fas fa-home w-6 text-lg"></i>
                         <span class="ml-3 font-medium">Dashboard</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
+                    <a href="#" id="nav-students" onclick="switchTab('students')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
                         <i class="fas fa-user-graduate w-6 text-lg"></i>
                         <span class="ml-3 font-medium">Student Management</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
+                    <a href="#" id="nav-attendance" onclick="switchTab('attendance')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
                         <i class="fas fa-check-square w-6 text-lg"></i>
                         <span class="ml-3 font-medium">Attendance</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
+                    <a href="#" id="nav-fees" onclick="switchTab('fees')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
                         <i class="fas fa-rupee-sign w-6 text-lg"></i>
                         <span class="ml-3 font-medium">Fee Management</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
-                        <i class="fas fa-file-alt w-6 text-lg"></i>
-                        <span class="ml-3 font-medium">Examination</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
-                        <i class="fas fa-comments w-6 text-lg"></i>
-                        <span class="ml-3 font-medium">Parent Communication</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
+                    <a href="#" id="nav-teachers" onclick="switchTab('teachers')" class="nav-link flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
                         <i class="fas fa-chalkboard-teacher w-6 text-lg"></i>
                         <span class="ml-3 font-medium">Teacher Management</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
-                        <i class="fas fa-chart-bar w-6 text-lg"></i>
-                        <span class="ml-3 font-medium">Reports & Analytics</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition">
-                        <i class="fas fa-cog w-6 text-lg"></i>
-                        <span class="ml-3 font-medium">Settings</span>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Powered By Widget -->
+        <!-- Widget -->
         <div class="p-4 m-4 bg-gray-800 rounded-xl text-center border border-gray-700">
             <i class="fas fa-cloud text-3xl text-blue-400 mb-2"></i>
             <p class="text-xs text-gray-300 mb-2">Powered by<br><span class="font-bold text-white text-sm">SaaS Technology</span></p>
@@ -114,7 +91,6 @@
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full relative overflow-y-auto">
-        
         <!-- Header -->
         <header class="bg-white shadow-sm z-10 sticky top-0 px-6 py-3 flex justify-between items-center">
             <div class="flex items-center">
@@ -127,25 +103,13 @@
                     <p class="text-sm text-gray-600 font-medium">Kansua, Kota</p>
                 </div>
             </div>
-
             <div class="flex items-center space-x-6">
-                <div class="hidden md:block italic text-gray-600 font-medium border-r pr-6">
-                    Learn • Grow • Excel
-                </div>
-                
-                <div class="flex items-center bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200 cursor-pointer">
+                <div class="flex items-center bg-gray-100 px-3 py-1.5 rounded-lg border border-gray-200">
                     <i class="far fa-calendar-alt text-gray-500 mr-2"></i>
-                    <span class="text-sm font-medium">Academic Session: 2025 - 26</span>
-                    <i class="fas fa-chevron-down text-gray-400 text-xs ml-2"></i>
+                    <span class="text-sm font-medium">Session: 2025 - 26</span>
                 </div>
-
-                <div class="relative cursor-pointer">
-                    <i class="far fa-bell text-xl text-gray-600"></i>
-                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">3</span>
-                </div>
-
-                <div class="flex items-center cursor-pointer">
-                    <img src="https://ui-avatars.com/api/?name=Dr+S+Sharma&background=0D8ABC&color=fff" alt="Admin" class="w-10 h-10 rounded-full border-2 border-gray-200">
+                <div class="flex items-center">
+                    <img src="https://ui-avatars.com/api/?name=Dr+S+Sharma&background=0D8ABC&color=fff" class="w-10 h-10 rounded-full">
                     <div class="ml-2 hidden md:block">
                         <p class="text-xs text-gray-500 font-medium">Principal</p>
                         <p class="text-sm font-bold text-gray-800">Dr. S. Sharma</p>
@@ -154,231 +118,205 @@
             </div>
         </header>
 
-        <!-- Dashboard Content -->
-        <div class="p-6 space-y-6">
+        <div class="p-6">
             
-            <!-- Hero Banner -->
-            <div class="bg-primary rounded-xl p-8 text-white relative overflow-hidden shadow-lg flex justify-between items-center bg-cover bg-center" style="background-image: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');">
-                <div class="relative z-10 w-2/3">
-                    <h2 class="text-4xl font-bold mb-2">Aadarsh Narsingh Convent School</h2>
-                    <p class="text-lg text-gray-300 mb-4"><i class="fas fa-map-marker-alt mr-2"></i>Kansua, Kota</p>
-                    <p class="text-xl font-semibold italic text-yellow-400">Building a Better Future Together...</p>
-                </div>
-                <div class="relative z-10 text-right w-1/3 transform -rotate-3">
-                    <h3 class="text-4xl font-extrabold italic font-serif">Education<br>Beyond Books</h3>
-                </div>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Total Students -->
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-md flex justify-between items-center">
-                    <div>
-                        <p class="text-blue-100 text-sm font-medium mb-1">Total Students</p>
+            <!-- 1. DASHBOARD PAGE -->
+            <div id="page-dashboard" class="page-section active space-y-6">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-md">
+                        <p class="text-blue-100 text-sm mb-1">Total Students</p>
                         <h3 class="text-3xl font-bold">1,248</h3>
-                        <p class="text-xs text-green-300 mt-2"><i class="fas fa-arrow-up mr-1"></i>+2% this month</p>
                     </div>
-                    <i class="fas fa-user-graduate text-5xl opacity-20"></i>
-                </div>
-                
-                <!-- Total Teachers -->
-                <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-xl p-6 text-white shadow-md flex justify-between items-center">
-                    <div>
-                        <p class="text-emerald-100 text-sm font-medium mb-1">Total Teachers</p>
+                    <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-xl p-6 text-white shadow-md">
+                        <p class="text-emerald-100 text-sm mb-1">Total Teachers</p>
                         <h3 class="text-3xl font-bold">86</h3>
-                        <p class="text-xs text-emerald-100 mt-2"><i class="fas fa-arrow-up mr-1"></i>+1%</p>
                     </div>
-                    <i class="fas fa-chalkboard-teacher text-5xl opacity-20"></i>
-                </div>
-
-                <!-- Pending Fees -->
-                <div class="bg-gradient-to-r from-orange-400 to-orange-500 rounded-xl p-6 text-white shadow-md flex justify-between items-center relative overflow-hidden">
-                    <div class="z-10">
-                        <p class="text-orange-100 text-sm font-medium mb-1">Pending Fees</p>
+                    <div class="bg-gradient-to-r from-orange-400 to-orange-500 rounded-xl p-6 text-white shadow-md">
+                        <p class="text-orange-100 text-sm mb-1">Pending Fees</p>
                         <h3 class="text-3xl font-bold">₹3,45,000</h3>
-                        <button class="mt-2 bg-white text-orange-500 px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-100 transition">View Details <i class="fas fa-arrow-right ml-1"></i></button>
                     </div>
-                    <i class="fas fa-wallet text-6xl opacity-20 absolute right-4 bottom-4"></i>
-                </div>
-
-                <!-- Upcoming Exams -->
-                <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-md flex justify-between items-center relative overflow-hidden">
-                    <div class="z-10">
-                        <p class="text-purple-100 text-sm font-medium mb-1">Upcoming Exams</p>
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-md">
+                        <p class="text-purple-100 text-sm mb-1">Upcoming Exams</p>
                         <h3 class="text-2xl font-bold">25 Oct 2025</h3>
-                        <button class="mt-2 bg-white text-purple-600 px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-100 transition">View Schedule <i class="fas fa-arrow-right ml-1"></i></button>
-                    </div>
-                    <i class="far fa-calendar-check text-6xl opacity-20 absolute right-4 bottom-4"></i>
-                </div>
-            </div>
-
-            <!-- Main Charts & Activity -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Attendance Overview -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-gray-800"><i class="fas fa-chart-pie text-blue-500 mr-2"></i>Attendance Overview</h3>
-                        <select class="text-xs bg-gray-50 border border-gray-200 rounded p-1 text-gray-600 outline-none">
-                            <option>This Month</option>
-                        </select>
-                    </div>
-                    <div class="relative h-48 w-full flex justify-center">
-                        <canvas id="attendanceChart"></canvas>
-                        <!-- Center Text for Doughnut -->
-                        <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
-                            <span class="text-2xl font-bold text-gray-800">92%</span>
-                            <span class="text-[10px] text-gray-500 text-center leading-tight">Overall<br>Attendance</span>
-                        </div>
-                    </div>
-                    <div class="flex justify-around mt-4">
-                        <div class="text-center">
-                            <p class="text-xs text-gray-500"><span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>Students</p>
-                            <p class="font-bold text-gray-800">92%</p>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-xs text-gray-500"><span class="inline-block w-2 h-2 rounded-full bg-blue-500 mr-1"></span>Teachers</p>
-                            <p class="font-bold text-gray-800">95%</p>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Fee Collection -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-gray-800"><i class="fas fa-rupee-sign text-emerald-500 mr-2"></i>Fee Collection</h3>
-                        <select class="text-xs bg-gray-50 border border-gray-200 rounded p-1 text-gray-600 outline-none">
-                            <option>This Month</option>
-                        </select>
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-sm border p-6">
+                        <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-chart-pie text-blue-500 mr-2"></i>Attendance Overview</h3>
+                        <div class="relative h-48 w-full flex justify-center">
+                            <canvas id="attendanceChart"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
+                                <span class="text-2xl font-bold text-gray-800">92%</span>
+                                <span class="text-[10px] text-gray-500 text-center">Overall</span>
+                            </div>
+                        </div>
                     </div>
-                    <div>
+                    <div class="bg-white rounded-xl shadow-sm border p-6">
+                        <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-rupee-sign text-emerald-500 mr-2"></i>Fee Collection</h3>
                         <h2 class="text-3xl font-bold text-gray-800">₹2,80,000</h2>
-                        <p class="text-sm text-emerald-500 font-medium mb-4"><i class="fas fa-arrow-up mr-1"></i>12% <span class="text-gray-400 font-normal">from last month</span></p>
-                        
-                        <!-- Progress Bar -->
-                        <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
+                        <div class="w-full bg-gray-200 rounded-full h-3 mb-4 mt-4">
                             <div class="bg-emerald-500 h-3 rounded-full" style="width: 56%"></div>
                         </div>
-                        
-                        <div class="space-y-2 mt-6">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">Total Fees:</span>
-                                <span class="font-bold text-gray-800">₹5,00,000</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">Collected:</span>
-                                <span class="font-bold text-emerald-600">₹2,80,000</span>
-                            </div>
-                            <div class="flex justify-between text-sm border-t border-gray-100 pt-2">
-                                <span class="text-gray-500">Pending:</span>
-                                <span class="font-bold text-orange-500">₹3,45,000</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Recent Activities -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-gray-800"><i class="fas fa-bell text-blue-500 mr-2"></i>Recent Activities</h3>
-                        <a href="#" class="text-xs font-bold text-blue-600 hover:underline">View All <i class="fas fa-arrow-right"></i></a>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div class="flex items-start">
-                            <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0">
-                                <i class="fas fa-check text-xs"></i>
-                            </div>
-                            <div class="ml-3 flex-1">
-                                <p class="text-sm font-medium text-gray-800">New admission: Ayaan Khan</p>
-                                <p class="text-xs text-gray-400">2 min ago</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                                <i class="fas fa-rupee-sign text-xs"></i>
-                            </div>
-                            <div class="ml-3 flex-1">
-                                <p class="text-sm font-medium text-gray-800">Fee received: ₹5,000 (Rahul Sharma)</p>
-                                <p class="text-xs text-gray-400">5 min ago</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start">
-                            <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
-                                <i class="fas fa-file-alt text-xs"></i>
-                            </div>
-                            <div class="ml-3 flex-1">
-                                <p class="text-sm font-medium text-gray-800">Exam Result Published (Class 10)</p>
-                                <p class="text-xs text-gray-400">15 min ago</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start">
-                            <div class="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
-                                <i class="fas fa-bullhorn text-xs"></i>
-                            </div>
-                            <div class="ml-3 flex-1">
-                                <p class="text-sm font-medium text-gray-800">New Notice: Winter Vacation</p>
-                                <p class="text-xs text-gray-400">30 min ago</p>
-                            </div>
-                        </div>
+                <!-- Quick Access -->
+                <div class="bg-white rounded-xl shadow-sm border p-6">
+                    <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-star text-yellow-400 mr-2"></i>Quick Access</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button onclick="switchTab('students')" class="p-4 bg-blue-50 rounded-xl hover:bg-blue-100 border border-blue-100">
+                            <i class="fas fa-user-graduate text-2xl text-blue-600 mb-2"></i><br><span class="text-xs font-bold text-gray-700">Student Management</span>
+                        </button>
+                        <button onclick="switchTab('attendance')" class="p-4 bg-emerald-50 rounded-xl hover:bg-emerald-100 border border-emerald-100">
+                            <i class="fas fa-check-square text-2xl text-emerald-600 mb-2"></i><br><span class="text-xs font-bold text-gray-700">Take Attendance</span>
+                        </button>
+                        <button onclick="switchTab('fees')" class="p-4 bg-purple-50 rounded-xl hover:bg-purple-100 border border-purple-100">
+                            <i class="fas fa-rupee-sign text-2xl text-purple-600 mb-2"></i><br><span class="text-xs font-bold text-gray-700">Manage Fees</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Quick Access -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-                <h3 class="font-bold text-gray-800 mb-4"><i class="fas fa-star text-yellow-400 mr-2"></i>Quick Access</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                    <button class="flex flex-col items-center p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition border border-blue-100">
-                        <i class="fas fa-user-graduate text-2xl text-blue-600 mb-2"></i>
-                        <span class="text-xs font-bold text-gray-700 text-center">Student<br>Management</span>
-                    </button>
-                    <button class="flex flex-col items-center p-4 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition border border-emerald-100">
-                        <i class="fas fa-check-square text-2xl text-emerald-600 mb-2"></i>
-                        <span class="text-xs font-bold text-gray-700 text-center">Take<br>Attendance</span>
-                    </button>
-                    <button class="flex flex-col items-center p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition border border-purple-100">
-                        <i class="fas fa-rupee-sign text-2xl text-purple-600 mb-2"></i>
-                        <span class="text-xs font-bold text-gray-700 text-center">Manage<br>Fees</span>
-                    </button>
-                    <button class="flex flex-col items-center p-4 bg-orange-50 rounded-xl hover:bg-orange-100 transition border border-orange-100">
-                        <i class="fas fa-file-alt text-2xl text-orange-600 mb-2"></i>
-                        <span class="text-xs font-bold text-gray-700 text-center">Manage<br>Exams</span>
-                    </button>
-                    <button class="flex flex-col items-center p-4 bg-rose-50 rounded-xl hover:bg-rose-100 transition border border-rose-100">
-                        <i class="fas fa-envelope text-2xl text-rose-600 mb-2"></i>
-                        <span class="text-xs font-bold text-gray-700 text-center">Send<br>Notice</span>
-                    </button>
-                    <button class="flex flex-col items-center p-4 bg-teal-50 rounded-xl hover:bg-teal-100 transition border border-teal-100">
-                        <i class="fas fa-chalkboard-teacher text-2xl text-teal-600 mb-2"></i>
-                        <span class="text-xs font-bold text-gray-700 text-center">Teacher<br>Management</span>
-                    </button>
-                    <button class="flex flex-col items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition border border-gray-200">
-                        <i class="fas fa-chart-bar text-2xl text-gray-600 mb-2"></i>
-                        <span class="text-xs font-bold text-gray-700 text-center">View<br>Reports</span>
-                    </button>
+            <!-- 2. STUDENT MANAGEMENT PAGE -->
+            <div id="page-students" class="page-section">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Student Management</h2>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700"><i class="fas fa-plus mr-2"></i>Add New Student</button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border p-6">
+                    <div class="flex gap-4 mb-6">
+                        <input type="text" placeholder="Search by name, roll no..." class="border p-2 rounded w-full md:w-1/3">
+                        <select class="border p-2 rounded"><option>Class 10</option><option>Class 9</option></select>
+                        <button class="bg-gray-800 text-white px-4 py-2 rounded">Search</button>
+                    </div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 text-sm">
+                                <th class="p-3 border-b">Roll No</th>
+                                <th class="p-3 border-b">Student Name</th>
+                                <th class="p-3 border-b">Class & Sec</th>
+                                <th class="p-3 border-b">Parent Name</th>
+                                <th class="p-3 border-b">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="p-3 font-medium">101</td>
+                                <td class="p-3">Ayaan Khan</td>
+                                <td class="p-3">10 - A</td>
+                                <td class="p-3">Zakir Khan</td>
+                                <td class="p-3">
+                                    <button class="text-blue-500 mr-2"><i class="fas fa-edit"></i></button>
+                                    <button class="text-red-500"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="p-3 font-medium">102</td>
+                                <td class="p-3">Rahul Sharma</td>
+                                <td class="p-3">10 - A</td>
+                                <td class="p-3">Rakesh Sharma</td>
+                                <td class="p-3">
+                                    <button class="text-blue-500 mr-2"><i class="fas fa-edit"></i></button>
+                                    <button class="text-red-500"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- Footer inside main content for scrolling -->
-            <footer class="mt-8 border-t border-gray-200 pt-4 pb-2 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-                <p>&copy; 2025 Aadarsh Narsingh Convent School, Kansua, Kota | Developed with <i class="fas fa-heart text-red-500"></i> by Kasif Pathaan</p>
-                <div class="flex space-x-4 mt-2 md:mt-0">
-                    <span class="flex items-center"><i class="fas fa-shield-alt text-green-500 mr-1"></i> Secure & Reliable</span>
-                    <span class="flex items-center"><i class="fas fa-globe text-blue-500 mr-1"></i> Access Anytime, Anywhere</span>
+            <!-- 3. ATTENDANCE PAGE -->
+            <div id="page-attendance" class="page-section">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Mark Attendance</h2>
+                <div class="bg-white rounded-xl shadow-sm border p-6">
+                    <div class="flex gap-4 mb-6">
+                        <select class="border p-2 rounded"><option>Class 10 - A</option></select>
+                        <input type="date" class="border p-2 rounded">
+                        <button class="bg-emerald-600 text-white px-4 py-2 rounded">Fetch Students</button>
+                    </div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 text-sm">
+                                <th class="p-3 border-b">Roll No</th>
+                                <th class="p-3 border-b">Student Name</th>
+                                <th class="p-3 border-b">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="p-3">101</td>
+                                <td class="p-3">Ayaan Khan</td>
+                                <td class="p-3">
+                                    <label class="mr-4 text-green-600 font-bold"><input type="radio" name="att_101" checked> Present</label>
+                                    <label class="text-red-600 font-bold"><input type="radio" name="att_101"> Absent</label>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700">Submit Attendance</button>
                 </div>
-            </footer>
+            </div>
+
+            <!-- 4. FEE MANAGEMENT PAGE -->
+            <div id="page-fees" class="page-section">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Fee Management</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-emerald-50 p-6 rounded-xl border border-emerald-100">
+                        <h3 class="text-emerald-800 font-bold mb-2">Collect Fees</h3>
+                        <input type="text" placeholder="Admission Number" class="border p-2 rounded w-full mb-3">
+                        <button class="bg-emerald-600 text-white px-4 py-2 rounded w-full">Search Student</button>
+                    </div>
+                    <div class="bg-orange-50 p-6 rounded-xl border border-orange-100">
+                        <h3 class="text-orange-800 font-bold mb-2">Pending Dues</h3>
+                        <p class="text-3xl font-bold text-orange-600">₹3,45,000</p>
+                        <button class="mt-3 text-orange-700 font-medium underline">View Defaulters List</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. TEACHER MANAGEMENT PAGE -->
+            <div id="page-teachers" class="page-section">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Teacher Management</h2>
+                <div class="bg-white p-6 rounded-xl shadow-sm border text-center py-12">
+                    <i class="fas fa-tools text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-bold text-gray-600">Module Available in Full Version</h3>
+                    <p class="text-gray-400">Teacher attendance and payroll setup goes here.</p>
+                </div>
+            </div>
 
         </div>
     </main>
 
-    <!-- Chart Setup Script -->
     <script>
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Hide all pages
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show target page
+            document.getElementById('page-' + tabId).classList.add('active');
+            
+            // Reset nav styles
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('bg-blue-600', 'text-white', 'border-l-4', 'border-white');
+                link.classList.add('text-gray-300', 'hover:bg-gray-800', 'hover:text-white');
+            });
+            
+            // Set active nav style
+            const activeNav = document.getElementById('nav-' + tabId);
+            if(activeNav) {
+                activeNav.classList.remove('text-gray-300', 'hover:bg-gray-800', 'hover:text-white');
+                activeNav.classList.add('bg-blue-600', 'text-white', 'border-l-4', 'border-white');
+            }
+        }
+
+        // Initialize Chart.js
         document.addEventListener('DOMContentLoaded', function() {
-            // Attendance Doughnut Chart
             const ctx = document.getElementById('attendanceChart').getContext('2d');
             new Chart(ctx, {
                 type: 'doughnut',
@@ -395,10 +333,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false }
-                    }
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
                 }
             });
         });
