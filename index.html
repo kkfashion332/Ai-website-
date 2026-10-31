@@ -31,6 +31,9 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .modal { display: none; background: rgba(0,0,0,0.5); }
         .modal.active { display: flex; }
+        
+        /* ID Card Gradient */
+        .id-card-bg { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col overflow-hidden">
@@ -108,7 +111,7 @@
         <main class="flex-1 relative overflow-y-auto bg-gray-100">
             <div class="p-6">
                 
-                <!-- DASHBOARD -->
+                <!-- 1. DASHBOARD -->
                 <div id="page-dashboard" class="page-section active space-y-6">
                     <div class="bg-primary rounded-xl p-8 text-white relative overflow-hidden shadow-lg flex justify-between items-center bg-cover bg-center" style="background-image: linear-gradient(to right, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.7)), url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');">
                         <div class="relative z-10 w-2/3">
@@ -211,15 +214,15 @@
                     </div>
                 </div>
 
-                <!-- STUDENT MANAGEMENT -->
+                <!-- 2. STUDENT MANAGEMENT -->
                 <div id="page-students" class="page-section">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800">Student Management</h2>
-                        <button onclick="openModal('addStudentModal')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700"><i class="fas fa-plus mr-2"></i>Add New Student</button>
+                        <button onclick="openModal('addStudentModal')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 shadow-md"><i class="fas fa-plus mr-2"></i>Add New Student</button>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                         <div class="flex gap-4 mb-6">
-                            <input type="text" id="studentSearch" placeholder="Search by name..." class="border p-2 rounded w-full md:w-1/3" onkeyup="filterStudents()">
+                            <input type="text" id="studentSearch" placeholder="Search by student name..." class="border p-2 rounded w-full md:w-1/3" onkeyup="filterStudents()">
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
@@ -229,7 +232,7 @@
                                         <th class="p-3 border-b">Student Name</th>
                                         <th class="p-3 border-b">Class & Sec</th>
                                         <th class="p-3 border-b">Parent Name</th>
-                                        <th class="p-3 border-b">Action</th>
+                                        <th class="p-3 border-b text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="studentTableBody">
@@ -240,50 +243,84 @@
                     </div>
                 </div>
 
-                <!-- ATTENDANCE -->
+                <!-- 3. ATTENDANCE PAGE -->
                 <div id="page-attendance" class="page-section">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">Mark Attendance</h2>
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div class="flex gap-4 mb-6">
-                            <select class="border p-2 rounded"><option>Class 10 - A</option></select>
-                            <input type="date" id="attendanceDate" class="border p-2 rounded">
-                            <button onclick="alert('Attendance saved successfully!')" class="bg-emerald-600 text-white px-6 py-2 rounded font-medium">Save Attendance</button>
+                        <div class="flex flex-col md:flex-row gap-4 mb-6 bg-gray-50 p-4 rounded-lg border">
+                            <div class="flex-1">
+                                <label class="text-xs font-bold text-gray-500 uppercase block mb-1">Select Class</label>
+                                <select id="attClassFilter" onchange="filterAttendanceTable()" class="border p-2 rounded w-full outline-none focus:border-blue-500">
+                                    <option value="All">All Classes</option>
+                                    <option value="10 - A">Class 10 - A</option>
+                                    <option value="9 - B">Class 9 - B</option>
+                                    <option value="8 - A">Class 8 - A</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-xs font-bold text-gray-500 uppercase block mb-1">Date</label>
+                                <input type="date" id="attendanceDate" class="border p-2 rounded w-full outline-none">
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="alert('Attendance saved successfully!')" class="bg-emerald-600 text-white px-6 py-2 rounded font-medium shadow w-full md:w-auto">Save Data</button>
+                            </div>
                         </div>
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-gray-100 text-gray-600 text-sm">
-                                    <th class="p-3 border-b">Roll No</th>
+                                    <th class="p-3 border-b w-24">Roll No</th>
                                     <th class="p-3 border-b">Student Name</th>
+                                    <th class="p-3 border-b w-32">Class</th>
                                     <th class="p-3 border-b">Status</th>
                                 </tr>
                             </thead>
                             <tbody id="attendanceTableBody">
-                                <!-- Rendered via JS -->
+                                <!-- Rendered via JS and Filtered -->
                             </tbody>
                         </table>
+                        <div id="noAttendanceMsg" class="hidden text-center py-6 text-gray-500">No students found for this class.</div>
                     </div>
                 </div>
 
-                <!-- FEE MANAGEMENT -->
+                <!-- 4. FEE MANAGEMENT -->
                 <div id="page-fees" class="page-section">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">Fee Management</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                            <h3 class="text-gray-800 font-bold mb-4">Collect Fees</h3>
-                            <input type="text" id="feeRollNo" placeholder="Enter Roll Number (e.g. 101)" class="border p-2 rounded w-full mb-3">
-                            <input type="number" id="feeAmount" placeholder="Amount (₹)" class="border p-2 rounded w-full mb-3">
-                            <button onclick="processFee()" class="bg-emerald-600 text-white px-4 py-2 rounded w-full font-medium">Process Payment</button>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                            <h3 class="text-gray-800 font-bold mb-4">Recent Transactions</h3>
-                            <ul id="feeTransactions" class="space-y-3 text-sm">
-                                <li class="flex justify-between border-b pb-2"><span>Rahul Sharma (102)</span><span class="text-emerald-600 font-bold">+₹5,000</span></li>
+                        <!-- Fee Structure Panel -->
+                        <div class="bg-blue-50 p-6 rounded-xl border border-blue-100 shadow-sm">
+                            <h3 class="text-blue-800 font-bold mb-4"><i class="fas fa-list-ul mr-2"></i>Class-wise Fee Structure</h3>
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex justify-between border-b border-blue-200 pb-1"><span>Class 1 to 5</span><span class="font-bold">₹1,500 / month</span></li>
+                                <li class="flex justify-between border-b border-blue-200 pb-1"><span>Class 6 to 8</span><span class="font-bold">₹2,000 / month</span></li>
+                                <li class="flex justify-between border-b border-blue-200 pb-1"><span>Class 9 to 10</span><span class="font-bold">₹2,500 / month</span></li>
+                                <li class="flex justify-between pb-1"><span>Class 11 to 12</span><span class="font-bold">₹3,000 / month</span></li>
                             </ul>
                         </div>
+                        
+                        <!-- Fee Collection Panel -->
+                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h3 class="text-gray-800 font-bold mb-4"><i class="fas fa-rupee-sign mr-2"></i>Collect Fees</h3>
+                            <label class="text-xs font-bold text-gray-500">Enter Roll No (Try 101 or 103)</label>
+                            <input type="text" id="feeRollNo" placeholder="e.g. 101" class="border p-2 rounded w-full mb-3 outline-none focus:border-blue-500" onkeyup="autoFillFee()">
+                            
+                            <div id="feeStudentDetails" class="text-sm text-gray-600 mb-2 h-5"></div>
+                            
+                            <label class="text-xs font-bold text-gray-500">Amount to Pay</label>
+                            <input type="number" id="feeAmount" placeholder="Amount (₹)" class="border p-2 rounded w-full mb-4 bg-gray-50">
+                            
+                            <button onclick="processFee()" class="bg-emerald-600 text-white px-4 py-2 rounded w-full font-medium shadow hover:bg-emerald-700">Process Payment</button>
+                        </div>
+                    </div>
+                    <!-- Transactions -->
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <h3 class="text-gray-800 font-bold mb-4">Recent Transactions</h3>
+                        <ul id="feeTransactions" class="space-y-3 text-sm">
+                            <li class="flex justify-between border-b pb-2"><span>Rahul Sharma (102) - Class 10</span><span class="text-emerald-600 font-bold">+₹2,500</span></li>
+                        </ul>
                     </div>
                 </div>
 
-                <!-- EXAMS -->
+                <!-- 5. EXAMS -->
                 <div id="page-exams" class="page-section">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">Examination Management</h2>
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -295,13 +332,17 @@
                     </div>
                 </div>
 
-                <!-- NOTICES -->
+                <!-- 6. NOTICES -->
                 <div id="page-notices" class="page-section">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Send Notice</h2>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Parent Communication</h2>
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-2xl">
-                        <input type="text" placeholder="Notice Title" class="border p-2 rounded w-full mb-4">
-                        <textarea placeholder="Type your message here..." rows="4" class="border p-2 rounded w-full mb-4"></textarea>
-                        <button onclick="alert('Notice Sent!')" class="bg-blue-600 text-white px-6 py-2 rounded font-medium">Broadcast Notice</button>
+                        <h3 class="text-lg font-bold mb-4">Broadcast Notice</h3>
+                        <input type="text" placeholder="Notice Title" class="border p-2 rounded w-full mb-4 outline-none focus:border-blue-500">
+                        <textarea placeholder="Type your message here..." rows="4" class="border p-2 rounded w-full mb-4 outline-none focus:border-blue-500"></textarea>
+                        <div class="flex space-x-3">
+                            <button onclick="alert('Notice sent to Parent App!')" class="bg-blue-600 text-white px-6 py-2 rounded font-medium shadow hover:bg-blue-700 flex-1"><i class="fas fa-paper-plane mr-2"></i> Send to App</button>
+                            <button onclick="alert('WhatsApp Alerts Sent Successfully!')" class="bg-green-500 text-white px-6 py-2 rounded font-medium shadow hover:bg-green-600 flex-1"><i class="fab fa-whatsapp mr-2"></i> WhatsApp Alert</button>
+                        </div>
                     </div>
                 </div>
 
@@ -309,30 +350,93 @@
         </main>
     </div>
 
-    <!-- Modal for Adding Student -->
+    <!-- Modals -->
+
+    <!-- Add Student Modal (UPDATED WITH DROPDOWNS) -->
     <div id="addStudentModal" class="modal fixed inset-0 z-50 items-center justify-center">
         <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
             <h3 class="text-xl font-bold mb-4">Add New Student</h3>
             <div class="space-y-3">
-                <input type="text" id="addName" placeholder="Student Name" class="border p-2 w-full rounded">
-                <input type="text" id="addClass" placeholder="Class & Section (e.g. 10 - A)" class="border p-2 w-full rounded">
-                <input type="text" id="addParent" placeholder="Parent Name" class="border p-2 w-full rounded">
+                <input type="text" id="addName" placeholder="Student Name" class="border p-2 w-full rounded outline-none focus:border-blue-500">
+                
+                <div class="flex space-x-2">
+                    <select id="addClassDrop" class="border p-2 w-full rounded outline-none focus:border-blue-500">
+                        <option value="">Select Class</option>
+                        <option value="1">Class 1</option><option value="2">Class 2</option><option value="3">Class 3</option>
+                        <option value="4">Class 4</option><option value="5">Class 5</option><option value="6">Class 6</option>
+                        <option value="7">Class 7</option><option value="8">Class 8</option><option value="9">Class 9</option>
+                        <option value="10">Class 10</option><option value="11">Class 11</option><option value="12">Class 12</option>
+                    </select>
+                    
+                    <select id="addSectionDrop" class="border p-2 w-full rounded outline-none focus:border-blue-500">
+                        <option value="">Section</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+
+                <input type="text" id="addParent" placeholder="Father/Guardian Name" class="border p-2 w-full rounded outline-none focus:border-blue-500">
             </div>
             <div class="mt-6 flex justify-end space-x-3">
                 <button onclick="closeModal('addStudentModal')" class="px-4 py-2 text-gray-500 border rounded hover:bg-gray-50">Cancel</button>
-                <button onclick="saveStudent()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                <button onclick="saveStudent()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save Student</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UNIQUE FEATURE: Generate ID Card Modal -->
+    <div id="idCardModal" class="modal fixed inset-0 z-50 items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm relative">
+            <button onclick="closeModal('idCardModal')" class="absolute top-2 right-4 text-gray-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+            
+            <h3 class="text-center font-bold text-gray-700 mb-4 border-b pb-2">Student Identity Card</h3>
+            
+            <!-- The ID Card Design -->
+            <div class="id-card-bg rounded-xl overflow-hidden shadow-lg border-2 border-yellow-500 relative">
+                <!-- Header -->
+                <div class="text-center pt-4 pb-2 bg-white/10">
+                    <img src="https://i.ibb.co/k2B6k84P/1793434186682.png" alt="Logo" class="h-10 mx-auto object-contain mb-1 drop-shadow-md">
+                    <h4 class="text-white font-serif font-bold text-sm tracking-wide leading-tight">Aadarsh Narsingh<br>Convent School</h4>
+                </div>
+                
+                <!-- Body -->
+                <div class="bg-white p-4 text-center mt-1 rounded-t-2xl relative">
+                    <div class="w-20 h-20 bg-gray-200 rounded-full mx-auto border-4 border-white shadow -mt-10 overflow-hidden">
+                        <img src="https://ui-avatars.com/api/?name=Student&background=random" id="idCardPhoto" class="w-full h-full object-cover">
+                    </div>
+                    
+                    <h2 class="text-xl font-bold text-blue-900 mt-2" id="idCardName">Student Name</h2>
+                    <p class="text-sm font-bold text-yellow-600 mb-3" id="idCardClass">Class: 10 - A</p>
+                    
+                    <div class="text-left text-xs text-gray-600 space-y-1 bg-gray-50 p-2 rounded border border-gray-100">
+                        <p><span class="font-bold text-gray-800">Roll No:</span> <span id="idCardRoll">101</span></p>
+                        <p><span class="font-bold text-gray-800">F. Name:</span> <span id="idCardParent">Parent Name</span></p>
+                        <p><span class="font-bold text-gray-800">Session:</span> 2025-26</p>
+                    </div>
+                </div>
+                <!-- Footer -->
+                <div class="bg-blue-900 text-white text-center py-1 text-[10px]">
+                    Kansua, Kota | Ph: Support Team
+                </div>
+            </div>
+
+            <div class="mt-4 text-center">
+                <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded-full font-medium shadow hover:bg-blue-700 text-sm"><i class="fas fa-print mr-1"></i> Print ID Card</button>
             </div>
         </div>
     </div>
 
     <script>
-        // State Data
+        // State Data (Pre-populated)
         let students = [
-            { id: 101, name: "Ayaan Khan", class: "10 - A", parent: "Zakir Khan" },
-            { id: 102, name: "Rahul Sharma", class: "10 - A", parent: "Rakesh Sharma" },
-            { id: 103, name: "Priya Singh", class: "9 - B", parent: "Vikram Singh" }
+            { id: 101, name: "Ayaan Khan", class: "10 - A", classNum: 10, parent: "Zakir Khan" },
+            { id: 102, name: "Rahul Sharma", class: "10 - A", classNum: 10, parent: "Rakesh Sharma" },
+            { id: 103, name: "Priya Singh", class: "9 - B", classNum: 9, parent: "Vikram Singh" },
+            { id: 104, name: "Rohan Verma", class: "8 - A", classNum: 8, parent: "Suresh Verma" }
         ];
-        let studentCounter = 104;
+        let studentCounter = 105;
 
         // Tab Navigation
         function switchTab(tabId) {
@@ -348,39 +452,32 @@
                 activeNav.classList.remove('text-gray-300', 'border-transparent');
                 activeNav.classList.add('bg-blue-600', 'text-white', 'border-white');
             }
-            if(tabId === 'students' || tabId === 'attendance') renderTables();
+            if(tabId === 'students') renderStudentTable();
+            if(tabId === 'attendance') filterAttendanceTable(); // Use filter func directly
         }
 
-        // Student Data Rendering
-        function renderTables() {
+        // 1. Student Table Rendering
+        function renderStudentTable() {
             const tbody = document.getElementById('studentTableBody');
-            const attBody = document.getElementById('attendanceTableBody');
-            tbody.innerHTML = ''; attBody.innerHTML = '';
+            tbody.innerHTML = '';
             
             students.forEach(student => {
                 tbody.innerHTML += `
                     <tr class="border-b hover:bg-gray-50">
                         <td class="p-3 font-medium">${student.id}</td>
                         <td class="p-3 name-col">${student.name}</td>
-                        <td class="p-3">${student.class}</td>
+                        <td class="p-3"><span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold border border-blue-200">${student.class}</span></td>
                         <td class="p-3">${student.parent}</td>
-                        <td class="p-3">
-                            <button onclick="deleteStudent(${student.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>`;
-                attBody.innerHTML += `
-                    <tr class="border-b">
-                        <td class="p-3">${student.id}</td>
-                        <td class="p-3">${student.name}</td>
-                        <td class="p-3">
-                            <label class="mr-4 text-green-600"><input type="radio" name="att_${student.id}" checked> Present</label>
-                            <label class="text-red-600"><input type="radio" name="att_${student.id}"> Absent</label>
+                        <td class="p-3 text-center space-x-3">
+                            <button onclick="generateIdCard(${student.id})" class="text-blue-500 hover:text-blue-700 title='Generate ID'"><i class="fas fa-id-badge text-lg"></i></button>
+                            <button onclick="deleteStudent(${student.id})" class="text-red-500 hover:text-red-700" title="Delete"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>`;
             });
             document.getElementById('dash-student-count').innerText = (1245 + students.length).toLocaleString();
         }
 
+        // Student Search
         function filterStudents() {
             const query = document.getElementById('studentSearch').value.toLowerCase();
             const rows = document.querySelectorAll('#studentTableBody tr');
@@ -390,44 +487,126 @@
             });
         }
 
+        // Add Student with Class & Section dropdowns
         function saveStudent() {
             const name = document.getElementById('addName').value;
-            const cls = document.getElementById('addClass').value;
+            const clsVal = document.getElementById('addClassDrop').value;
+            const secVal = document.getElementById('addSectionDrop').value;
             const parent = document.getElementById('addParent').value;
-            if(!name || !cls || !parent) return alert("Please fill all fields");
             
-            students.push({ id: studentCounter++, name, class: cls, parent });
+            if(!name || !clsVal || !secVal || !parent) return alert("Please fill all fields, select Class and Section.");
             
+            const combinedClass = `${clsVal} - ${secVal}`;
+            
+            students.push({ id: studentCounter++, name: name, class: combinedClass, classNum: parseInt(clsVal), parent: parent });
+            
+            // Add to activity log
             const activities = document.getElementById('recent-activities');
-            activities.innerHTML = `<div class="flex items-start"><div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0"><i class="fas fa-check text-xs"></i></div><div class="ml-3"><p class="text-sm font-medium">New admission: ${name}</p><p class="text-xs text-gray-400">Just now</p></div></div>` + activities.innerHTML;
+            activities.innerHTML = `<div class="flex items-start"><div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0"><i class="fas fa-check text-xs"></i></div><div class="ml-3"><p class="text-sm font-medium">New admission: ${name} (${combinedClass})</p><p class="text-xs text-gray-400">Just now</p></div></div>` + activities.innerHTML;
             
             closeModal('addStudentModal');
-            renderTables();
+            renderStudentTable();
+            if(document.getElementById('page-attendance').classList.contains('active')) filterAttendanceTable();
+            
+            // Reset fields
             document.getElementById('addName').value = '';
-            document.getElementById('addClass').value = '';
+            document.getElementById('addClassDrop').value = '';
+            document.getElementById('addSectionDrop').value = '';
             document.getElementById('addParent').value = '';
         }
 
         function deleteStudent(id) {
             if(confirm('Are you sure you want to delete this student?')) {
                 students = students.filter(s => s.id !== id);
-                renderTables();
+                renderStudentTable();
+                if(document.getElementById('page-attendance').classList.contains('active')) filterAttendanceTable();
             }
         }
 
-        // Fee System
+        // 2. Class-Wise Attendance Filter Logic
+        function filterAttendanceTable() {
+            const filterClass = document.getElementById('attClassFilter').value;
+            const attBody = document.getElementById('attendanceTableBody');
+            const msg = document.getElementById('noAttendanceMsg');
+            attBody.innerHTML = '';
+            
+            let filteredStudents = filterClass === "All" ? students : students.filter(s => s.class === filterClass);
+            
+            if(filteredStudents.length === 0) {
+                msg.classList.remove('hidden');
+            } else {
+                msg.classList.add('hidden');
+                filteredStudents.forEach(student => {
+                    attBody.innerHTML += `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-3 font-medium">${student.id}</td>
+                            <td class="p-3">${student.name}</td>
+                            <td class="p-3 text-xs font-bold text-gray-500">${student.class}</td>
+                            <td class="p-3">
+                                <label class="mr-4 text-green-600 cursor-pointer"><input type="radio" name="att_${student.id}" checked class="accent-green-600"> Present</label>
+                                <label class="text-red-600 cursor-pointer"><input type="radio" name="att_${student.id}" class="accent-red-600"> Absent</label>
+                            </td>
+                        </tr>`;
+                });
+            }
+        }
+
+        // 3. Class-wise Fee Auto Fill Logic
+        function getFeeForClass(classNum) {
+            if(classNum >= 1 && classNum <= 5) return 1500;
+            if(classNum >= 6 && classNum <= 8) return 2000;
+            if(classNum >= 9 && classNum <= 10) return 2500;
+            if(classNum >= 11 && classNum <= 12) return 3000;
+            return 0;
+        }
+
+        function autoFillFee() {
+            const roll = document.getElementById('feeRollNo').value;
+            const student = students.find(s => s.id == roll);
+            const detailDiv = document.getElementById('feeStudentDetails');
+            const amtInput = document.getElementById('feeAmount');
+            
+            if(student) {
+                detailDiv.innerHTML = `<span class="text-green-600 font-bold"><i class="fas fa-check-circle"></i> ${student.name} found (Class ${student.class})</span>`;
+                amtInput.value = getFeeForClass(student.classNum);
+            } else {
+                detailDiv.innerHTML = roll.length > 0 ? `<span class="text-red-500"><i class="fas fa-times-circle"></i> Student not found</span>` : "";
+                amtInput.value = '';
+            }
+        }
+
         function processFee() {
             const roll = document.getElementById('feeRollNo').value;
             const amt = document.getElementById('feeAmount').value;
             const student = students.find(s => s.id == roll);
-            if(!student || !amt) return alert("Invalid Roll No or Amount");
+            
+            if(!student || !amt) return alert("Please enter valid Roll No and Amount.");
             
             const txnList = document.getElementById('feeTransactions');
-            txnList.innerHTML = `<li class="flex justify-between border-b pb-2"><span>${student.name} (${student.id})</span><span class="text-emerald-600 font-bold">+₹${amt}</span></li>` + txnList.innerHTML;
+            txnList.innerHTML = `<li class="flex justify-between border-b pb-2"><span>${student.name} (${student.id}) - ${student.class}</span><span class="text-emerald-600 font-bold">+₹${amt}</span></li>` + txnList.innerHTML;
+            
+            // Add to activity log
+            const activities = document.getElementById('recent-activities');
+            activities.innerHTML = `<div class="flex items-start"><div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0"><i class="fas fa-rupee-sign text-xs"></i></div><div class="ml-3"><p class="text-sm font-medium">Fee received: ₹${amt} (${student.name})</p><p class="text-xs text-gray-400">Just now</p></div></div>` + activities.innerHTML;
             
             alert(`Payment of ₹${amt} processed for ${student.name}`);
             document.getElementById('feeRollNo').value = '';
             document.getElementById('feeAmount').value = '';
+            document.getElementById('feeStudentDetails').innerHTML = '';
+        }
+
+        // 4. NEW UNIQUE FEATURE: ID Card Generator
+        function generateIdCard(id) {
+            const student = students.find(s => s.id === id);
+            if(!student) return;
+            
+            document.getElementById('idCardPhoto').src = `https://ui-avatars.com/api/?name=${student.name}&background=random&color=fff&size=128`;
+            document.getElementById('idCardName').innerText = student.name;
+            document.getElementById('idCardClass').innerText = `Class: ${student.class}`;
+            document.getElementById('idCardRoll').innerText = student.id;
+            document.getElementById('idCardParent').innerText = student.parent;
+            
+            openModal('idCardModal');
         }
 
         // Modals
@@ -437,7 +616,7 @@
         // Init Chart & Dates
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('attendanceDate').valueAsDate = new Date();
-            renderTables();
+            renderStudentTable();
             
             const ctx = document.getElementById('attendanceChart').getContext('2d');
             new Chart(ctx, {
