@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>AffiliatePro - Android Affiliate Marketing Platform</title>
-  <meta name="description" content="Premium black & gold fintech affiliate marketing application featuring dynamic affiliate URLs, click tracking, wallet & withdrawals, referral rewards, and secret triple-tap admin console." />
+  <meta name="description" content="Premium black & gold fintech affiliate marketing application featuring dynamic affiliate URLs, EarnKaro Auto-Fetch, click tracking, wallet & withdrawals." />
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -80,15 +80,27 @@
 
   <!-- Standalone Application React Code -->
   <script type="text/babel">
-    const { useState, useEffect, useCallback, useMemo } = React;
+    const { useState, useEffect } = React;
 
-    // SVG Icons
+    // Safe LocalStorage Reader (Prevents Black Screen if storage corrupts)
+    const getSavedData = (key, fallback) => {
+      try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    };
+
+    // SVG Icons (Added ShoppingBag & Refresh to fix Black Screen crash)
     const Icons = {
       Home: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>,
       TrendingUp: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>,
       Share2: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>,
       Wallet: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>,
       Menu: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>,
+      ShoppingBag: () => <svg className="w-4 h-4 text-[#FFC928]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>,
+      Refresh: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>,
       Bell: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>,
       Shield: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>,
       ExternalLink: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>,
@@ -101,6 +113,179 @@
       Plus: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>,
       Trash: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>,
     };
+
+    // Smart EarnKaro / fktr.in / Flipkart / Amazon Link Decoder & Scraper Engine
+    async function fetchProductFromAffiliateLink(rawUrl) {
+      let targetUrl = rawUrl.trim();
+      let resolvedUrl = targetUrl;
+      let title = '';
+      let imageUrl = '';
+      let price = 0;
+      let mrp = 0;
+      let partnerName = 'Flipkart';
+
+      // Helper to extract embedded URL if EarnKaro redirects to ?url=https%3A%2F%2Fwww.flipkart.com...
+      const extractEmbeddedUrl = (str) => {
+        try {
+          const decoded = decodeURIComponent(decodeURIComponent(str));
+          const fkMatch = decoded.match(/https?:\/\/(?:www\.|dl\.)?flipkart\.com\/[^\s"'<>\\&]+/i);
+          if (fkMatch) return fkMatch[0];
+          const amzMatch = decoded.match(/https?:\/\/(?:www\.)?amazon\.in\/[^\s"'<>\\&]+/i);
+          if (amzMatch) return amzMatch[0];
+          const mynMatch = decoded.match(/https?:\/\/(?:www\.)?myntra\.com\/[^\s"'<>\\&]+/i);
+          if (mynMatch) return mynMatch[0];
+        } catch (e) {}
+        return null;
+      };
+
+      // Step 1: Try Microlink API first (Follows redirects + extracts metadata cleanly)
+      try {
+        const mlRes = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(targetUrl)}`);
+        const mlJson = await mlRes.json();
+        if (mlJson && mlJson.status === 'success' && mlJson.data) {
+          const d = mlJson.data;
+          if (d.url) {
+            const embedded = extractEmbeddedUrl(d.url);
+            resolvedUrl = embedded || d.url;
+          }
+          if (d.title && !d.title.toLowerCase().includes('just a moment') && !d.title.toLowerCase().includes('ekaro')) {
+            title = d.title.replace(/Buy\s+/i, '').replace(/Online at Best Prices.*/i, '').trim();
+          }
+          if (d.image && d.image.url && !d.image.url.includes('ekaro')) {
+            imageUrl = d.image.url;
+          }
+          // Try extracting price from description or title if present
+          const textToScan = `${d.title || ''} ${d.description || ''}`;
+          const priceMatch = textToScan.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,9})/i);
+          if (priceMatch) {
+            price = parseInt(priceMatch[1].replace(/,/g, ''), 10);
+          }
+        }
+      } catch (err) {
+        console.warn('Microlink layer warning:', err);
+      }
+
+      // Step 2: Deep HTML Scrape via CORS Proxy to resolve fktr.in & get exact Live Price + JSON-LD
+      const proxies = [
+        (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+        (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`
+      ];
+
+      for (const makeProxy of proxies) {
+        if (title && imageUrl && price > 0) break;
+        try {
+          const res = await fetch(makeProxy(resolvedUrl));
+          const data = await res.json().catch(async () => ({ contents: await res.text() }));
+          const html = data.contents || '';
+          const finalUrlFromProxy = (data.status && data.status.url) ? data.status.url : resolvedUrl;
+
+          // Check if HTML or URL contains embedded Flipkart/Amazon destination URL
+          const embedded = extractEmbeddedUrl(finalUrlFromProxy) || extractEmbeddedUrl(html);
+          if (embedded && embedded !== resolvedUrl) {
+            resolvedUrl = embedded;
+            // Fetch the actual Flipkart/Amazon product page HTML
+            const res2 = await fetch(makeProxy(resolvedUrl));
+            const data2 = await res2.json().catch(async () => ({ contents: await res2.text() }));
+            if (data2.contents) {
+              parseProductHtml(data2.contents);
+            }
+          } else if (html) {
+            parseProductHtml(html);
+          }
+        } catch (e) {
+          console.warn('Proxy attempt failed:', e);
+        }
+      }
+
+      function parseProductHtml(htmlString) {
+        const doc = new DOMParser().parseFromString(htmlString, 'text/html');
+
+        // 1. Check JSON-LD (Flipkart & Amazon standard structured data)
+        const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+        scripts.forEach(s => {
+          try {
+            let json = JSON.parse(s.textContent);
+            if (Array.isArray(json)) json = json[0];
+            if (json && (json['@type'] === 'Product' || json.name)) {
+              if (!title && json.name) title = json.name;
+              if (!imageUrl && json.image) {
+                imageUrl = Array.isArray(json.image) ? json.image[0] : json.image;
+              }
+              const offerPrice = json.offers?.price || json.offers?.[0]?.price;
+              if (!price && offerPrice) price = parseInt(String(offerPrice).replace(/[^0-9]/g, ''), 10);
+            }
+          } catch (e) {}
+        });
+
+        // 2. Check OpenGraph Meta Tags
+        if (!title) {
+          const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || doc.title;
+          if (ogTitle && !ogTitle.includes('Online Shopping')) {
+            title = ogTitle.replace(/Buy\s+/i, '').replace(/Online at Best.*/i, '').trim();
+          }
+        }
+        if (!imageUrl) {
+          const ogImg = doc.querySelector('meta[property="og:image"]')?.getAttribute('content');
+          if (ogImg) imageUrl = ogImg;
+        }
+
+        // 3. Check Flipkart / Amazon specific Price DOM classes
+        if (!price) {
+          const priceEl = doc.querySelector('.Nx9bqj, ._30jeq3, ._16Jk6d, .a-price-whole');
+          if (priceEl) {
+            const pVal = parseInt(priceEl.textContent.replace(/[^0-9]/g, ''), 10);
+            if (pVal > 0) price = pVal;
+          }
+        }
+        if (!mrp) {
+          const mrpEl = doc.querySelector('.yRaY8j, ._3I9_wc, ._2p6lqe');
+          if (mrpEl) {
+            const mVal = parseInt(mrpEl.textContent.replace(/[^0-9]/g, ''), 10);
+            if (mVal > 0) mrp = mVal;
+          }
+        }
+
+        // 4. Regex fallback for ₹ price in raw HTML
+        if (!price) {
+          const regexPrice = htmlString.match(/"price"\s*:\s*"?([0-9]{2,7})"?/i) || htmlString.match(/₹\s*([0-9,]{2,8})/);
+          if (regexPrice) {
+            price = parseInt(regexPrice[1].replace(/,/g, ''), 10);
+          }
+        }
+      }
+
+      // Step 3: Clean up & Smart Fallbacks from URL slug if Flipkart bot-check blocked full HTML
+      const lowerUrl = (resolvedUrl + ' ' + rawUrl).toLowerCase();
+      if (lowerUrl.includes('amazon') || lowerUrl.includes('amzn')) partnerName = 'Amazon';
+      else if (lowerUrl.includes('myntra')) partnerName = 'Myntra';
+      else if (lowerUrl.includes('ajio')) partnerName = 'Ajio';
+      else if (lowerUrl.includes('meesho')) partnerName = 'Meesho';
+      else partnerName = 'Flipkart';
+
+      // Extract readable product name from Flipkart/Amazon URL slug if title is still empty
+      if (!title && resolvedUrl.includes('/p/')) {
+        try {
+          const slug = resolvedUrl.split('flipkart.com/')[1]?.split('/p/')[0];
+          if (slug) {
+            title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          }
+        } catch (e) {}
+      }
+
+      if (!mrp && price > 0) {
+        mrp = Math.round(price * 1.25); // Estimate 20% off if MRP wasn't listed separately
+      }
+
+      return {
+        title: title || '',
+        imageUrl: imageUrl || '',
+        discountedPrice: price || '',
+        originalPrice: mrp || '',
+        partnerName,
+        resolvedUrl,
+        affiliateUrl: rawUrl.trim() // Always preserve the user's EarnKaro link!
+      };
+    }
 
     // Initial Data
     const INITIAL_PARTNERS = [
@@ -236,16 +421,26 @@
 
     function App() {
       // Core state
-      const [partners, setPartners] = useState(() => JSON.parse(localStorage.getItem('ap_partners')) || INITIAL_PARTNERS);
-      const [offers, setOffers] = useState(() => JSON.parse(localStorage.getItem('ap_offers')) || INITIAL_OFFERS);
-      const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('ap_user')) || INITIAL_USER);
-      const [withdrawals, setWithdrawals] = useState(() => JSON.parse(localStorage.getItem('ap_withdrawals')) || [
+      const [partners, setPartners] = useState(() => getSavedData('ap_partners', INITIAL_PARTNERS));
+      const [offers, setOffers] = useState(() => getSavedData('ap_offers', INITIAL_OFFERS));
+      const [currentUser, setCurrentUser] = useState(() => getSavedData('ap_user', INITIAL_USER));
+      const [withdrawals, setWithdrawals] = useState(() => getSavedData('ap_withdrawals', [
         { id: 'w1', amount: 5000, method: 'UPI', details: 'kasifbhai@okaxis', status: 'paid', date: '2026-10-20' },
         { id: 'w2', amount: 4500, method: 'UPI', details: 'kasifbhai@okaxis', status: 'pending', date: '2026-11-08' }
-      ]);
+      ]));
       const [activeTab, setActiveTab] = useState('home');
       const [searchQuery, setSearchQuery] = useState('');
-      const [selectedCategory, setSelectedCategory] = useState('All');
+
+      // EarnKaro Admin Product Form State
+      const [ekUrl, setEkUrl] = useState('');
+      const [prodTitle, setProdTitle] = useState('');
+      const [prodImage, setProdImage] = useState('');
+      const [prodPrice, setProdPrice] = useState('');
+      const [prodMrp, setProdMrp] = useState('');
+      const [prodPartner, setProdPartner] = useState('Flipkart');
+      const [prodCommission, setProdCommission] = useState('6.5%');
+      const [isFetchingMeta, setIsFetchingMeta] = useState(false);
+      const [fetchStatusMsg, setFetchStatusMsg] = useState('');
 
       // Modals
       const [customTab, setCustomTab] = useState({ open: false, url: '', title: '' });
@@ -267,8 +462,108 @@
         }
       };
 
+      // Handle Auto-Fetch from EarnKaro / fktr.in Link
+      const handleAutoFetchLink = async (inputLink) => {
+        const linkToUse = (inputLink || ekUrl).trim();
+        if (!linkToUse) {
+          alert('भाई पहले EarnKaro (fktr.in) या Flipkart का लिंक पेस्ट करो!');
+          return;
+        }
+        setIsFetchingMeta(true);
+        setFetchStatusMsg('EarnKaro लिंक से Product Title, Image और Live Price निकाला जा रहा है...');
+
+        try {
+          const data = await fetchProductFromAffiliateLink(linkToUse);
+          if (data.title) setProdTitle(data.title);
+          if (data.imageUrl) setProdImage(data.imageUrl);
+          if (data.discountedPrice) setProdPrice(String(data.discountedPrice));
+          if (data.originalPrice) setProdMrp(String(data.originalPrice));
+          if (data.partnerName) setProdPartner(data.partnerName);
+
+          if (data.title || data.imageUrl || data.discountedPrice) {
+            setFetchStatusMsg('✅ Details Auto-Filled! आप चाहें तो नीचे चेक करके Publish कर सकते हैं।');
+          } else {
+            setFetchStatusMsg('⚠️ शॉर्ट लिंक सिक्योरिटी की वजह से कुछ डिटेल्स ब्लॉक हुईं, कृपया नाम/प्राइस चेक कर लें।');
+          }
+        } catch (err) {
+          setFetchStatusMsg('❌ लिंक फेच करने में दिक्कत आई, आप मैन्युअली भर सकते हैं।');
+        } finally {
+          setIsFetchingMeta(false);
+        }
+      };
+
+      // Add Product to Offers List
+      const handleAddProductOffer = () => {
+        if (!ekUrl.trim() || !prodTitle.trim()) {
+          alert('Product Link और Title ज़रूरी हैं!');
+          return;
+        }
+        const priceNum = Number(prodPrice) || 999;
+        const mrpNum = Number(prodMrp) || Math.round(priceNum * 1.25);
+        const discountPct = mrpNum > priceNum ? Math.round(((mrpNum - priceNum) / mrpNum) * 100) : 15;
+
+        const newOffer = {
+          id: 'offer_' + Date.now(),
+          title: prodTitle.trim(),
+          description: `Best deal via ${prodPartner}. Verified EarnKaro Commission Link.`,
+          imageUrl: prodImage.trim() || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
+          partnerId: 'partner_' + prodPartner.toLowerCase(),
+          partnerName: prodPartner,
+          originalPrice: mrpNum,
+          discountedPrice: priceNum,
+          discountPercent: discountPct,
+          commissionRate: prodCommission || '5.0%',
+          affiliateUrl: ekUrl.trim(), // Saves exact EarnKaro link!
+          category: 'Electronics',
+          isTrending: true,
+          isBestDeal: true,
+          status: 'active'
+        };
+
+        setOffers(prev => [newOffer, ...prev]);
+        setEkUrl('');
+        setProdTitle('');
+        setProdImage('');
+        setProdPrice('');
+        setProdMrp('');
+        setFetchStatusMsg('');
+        if (window.confetti) confetti();
+        alert('🎉 प्रोडक्ट सफलतापूर्वक आपकी वेबसाइट पर लाइव हो गया है!');
+      };
+
+      // Refresh Live Price for an Existing Offer
+      const handleRefreshOfferPrice = async (offerId, url) => {
+        setFetchStatusMsg(`🔄 Updating live price for ${offerId}...`);
+        const data = await fetchProductFromAffiliateLink(url);
+        if (data.discountedPrice) {
+          setOffers(prev => prev.map(o => {
+            if (o.id === offerId) {
+              const newPrice = Number(data.discountedPrice);
+              const newMrp = Number(data.originalPrice) || o.originalPrice;
+              const newDisc = newMrp > newPrice ? Math.round(((newMrp - newPrice) / newMrp) * 100) : o.discountPercent;
+              return {
+                ...o,
+                discountedPrice: newPrice,
+                originalPrice: newMrp,
+                discountPercent: newDisc,
+                title: data.title || o.title,
+                imageUrl: data.imageUrl || o.imageUrl
+              };
+            }
+            return o;
+          }));
+          alert(`✅ नया Live Price अपडेट हो गया: ₹${data.discountedPrice}`);
+        } else {
+          const manualPrice = prompt('फ्लिपकार्ट कैप्चा के कारण ऑटो-प्राइस नहीं मिला। नया प्राइस (₹) दर्ज करें:');
+          if (manualPrice && !isNaN(manualPrice)) {
+            setOffers(prev => prev.map(o => o.id === offerId ? { ...o, discountedPrice: Number(manualPrice) } : o));
+          }
+        }
+        setFetchStatusMsg('');
+      };
+
       // Outbound Affiliate Link Opener
-      const openAffiliateLink = (url, title, partnerId, offerId) => {
+      const openAffiliateLink = (url, title, partnerId) => {
         if (partnerId) {
           setPartners(prev => prev.map(p => p.id === partnerId ? { ...p, clickCount: p.clickCount + 1 } : p));
         }
@@ -292,12 +587,12 @@
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#FFC928]"></span>
               <span className="font-bold font-display text-white">AffiliatePro</span>
-              <span className="text-zinc-500 hidden sm:inline">• Standalone Complete Edition</span>
+              <span className="text-zinc-500 hidden sm:inline">• EarnKaro Auto-Fetch Edition</span>
             </div>
 
             <div className="flex items-center gap-2">
               <button 
-                onClick={() => { handleLogoTap(); handleLogoTap(); handleLogoTap(); }}
+                onClick={() => setShowAdminLogin(true)}
                 className="px-2.5 py-1 rounded-md bg-[#FFC928]/15 border border-[#FFC928]/40 text-[#FFC928] font-bold text-[11px] flex items-center gap-1 hover:bg-[#FFC928]/25"
                 title="Triple tap logo or click here"
               >
@@ -307,7 +602,7 @@
             </div>
           </div>
 
-          {/* App Body - Clean Full View */}
+          {/* App Body */}
           <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col min-h-screen">
             <div className="w-full flex-1 flex flex-col relative">
 
@@ -344,9 +639,9 @@
                   {isAdmin && (
                     <button 
                       onClick={() => setActiveTab('admin')}
-                      className="px-2 py-1 rounded bg-[#FFC928] text-[#08090C] text-xs font-bold"
+                      className="px-2.5 py-1.5 rounded-lg bg-[#FFC928] text-[#08090C] text-xs font-extrabold shadow"
                     >
-                      Admin
+                      Admin Panel
                     </button>
                   )}
                 </div>
@@ -358,7 +653,7 @@
                 {/* TAB: HOME */}
                 {activeTab === 'home' && (
                   <div className="space-y-5">
-                    {/* Category Filter Pills (★ Top Offers, 🔥 Trending, 🏷️ Best Deals) */}
+                    {/* Category Filter Pills */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
                       <span className="px-3 py-1 rounded-full bg-[#FFC928] text-[#08090C] text-xs font-bold shadow-md shadow-[#FFC928]/30 flex items-center gap-1 shrink-0">
                         <Icons.Sparkles /> Top Offers
@@ -396,12 +691,12 @@
                       </div>
                     </div>
 
-                    {/* FEATURED OFFERS (EXACTLY MATCHING SCREENSHOT 1) */}
+                    {/* FEATURED OFFERS */}
                     <div>
                       <div className="flex items-center justify-between mb-2.5">
                         <h3 className="font-display font-bold text-base text-white flex items-center gap-1.5">
                           <span>🎁</span>
-                          <span>Featured Offers</span>
+                          <span>Featured Partners</span>
                         </h3>
                         <button onClick={() => setActiveTab('offers')} className="text-xs text-[#FFC928] font-bold hover:underline flex items-center gap-0.5">
                           <span>View All</span>
@@ -416,7 +711,6 @@
                               key={p.id} 
                               onClick={() => openAffiliateLink(p.affiliateUrl, p.name, p.id)}
                               className="p-2.5 rounded-xl bg-[#15171D] hover:bg-[#1C1F27] border border-white/[0.06] hover:border-[#FFC928]/50 flex flex-col items-center text-center cursor-pointer transition-all active:scale-95"
-                              title={`Open saved affiliate URL for ${p.name}`}
                             >
                               <div className="w-10 h-10 rounded-xl bg-[#08090C] border border-white/10 flex items-center justify-center p-1 mb-1.5 overflow-hidden">
                                 {p.logo ? (
@@ -446,21 +740,21 @@
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {offers.map(o => (
                           <div key={o.id} onClick={() => setSelectedOffer(o)} className="rounded-2xl bg-[#15171D] border border-white/[0.08] hover:border-[#FFC928]/40 overflow-hidden cursor-pointer transition-all">
-                            <div className="relative h-36 bg-[#08090C]">
-                              <img src={o.imageUrl} className="w-full h-full object-cover" />
-                              <span className="absolute top-2 left-2 text-[10px] font-extrabold bg-[#FFC928] text-[#08090C] px-2 py-0.5 rounded">
+                            <div className="relative h-40 bg-white flex items-center justify-center p-2">
+                              <img src={o.imageUrl} alt={o.title} className="max-h-full max-w-full object-contain" />
+                              <span className="absolute top-2 left-2 text-[10px] font-extrabold bg-[#FFC928] text-[#08090C] px-2 py-0.5 rounded shadow">
                                 {o.discountPercent}% OFF
                               </span>
-                              <span className="absolute top-2 right-2 text-[10px] font-semibold bg-black/70 text-zinc-300 px-2 py-0.5 rounded border border-white/10">
+                              <span className="absolute top-2 right-2 text-[10px] font-semibold bg-black/80 text-zinc-200 px-2 py-0.5 rounded border border-white/10">
                                 {o.partnerName}
                               </span>
                             </div>
                             <div className="p-3 space-y-2">
-                              <h4 className="font-bold text-xs text-white truncate">{o.title}</h4>
+                              <h4 className="font-bold text-xs text-white line-clamp-2 min-h-[2rem]">{o.title}</h4>
                               <div className="flex items-baseline justify-between">
                                 <div className="flex items-baseline gap-1.5">
-                                  <span className="font-extrabold text-sm text-white">₹{o.discountedPrice.toLocaleString()}</span>
-                                  <span className="text-[10px] text-zinc-400 line-through">₹{o.originalPrice.toLocaleString()}</span>
+                                  <span className="font-extrabold text-base text-white">₹{Number(o.discountedPrice).toLocaleString()}</span>
+                                  <span className="text-[11px] text-zinc-400 line-through">₹{Number(o.originalPrice).toLocaleString()}</span>
                                 </div>
                                 <span className="text-[11px] font-bold text-[#FFC928]">Earn: {o.commissionRate}</span>
                               </div>
@@ -468,9 +762,9 @@
                                 <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    navigator.clipboard.writeText(`${o.title}: ${o.affiliateUrl}`);
-                                    confetti();
-                                    alert('Link copied with your referral code!');
+                                    navigator.clipboard.writeText(`${o.title} - Deal Price ₹${o.discountedPrice}: ${o.affiliateUrl}`);
+                                    if (window.confetti) confetti();
+                                    alert('EarnKaro Deal Link Copied!');
                                   }}
                                   className="p-1.5 rounded-lg bg-[#252833] text-zinc-300 hover:text-white"
                                 >
@@ -483,7 +777,7 @@
                                   }}
                                   className="flex-1 py-1.5 rounded-xl bg-gradient-to-r from-[#FFC928] to-[#D99B16] text-[#08090C] text-xs font-bold flex items-center justify-center gap-1"
                                 >
-                                  <span>View Offer</span>
+                                  <span>Buy / View Offer</span>
                                   <Icons.ExternalLink />
                                 </button>
                               </div>
@@ -513,24 +807,6 @@
                         </div>
                       </div>
                     </div>
-
-                    <div className="space-y-2">
-                      <h3 className="font-bold text-xs text-white uppercase tracking-wider">Recent Transactions</h3>
-                      <div className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
-                        <div>
-                          <span className="font-bold text-white block">Samsung S24 Ultra Sale</span>
-                          <span className="text-[10px] text-zinc-400">Amazon Commission</span>
-                        </div>
-                        <span className="font-bold text-[#FFC928]">+₹5,084</span>
-                      </div>
-                      <div className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
-                        <div>
-                          <span className="font-bold text-white block">Referral Bonus: Rohit</span>
-                          <span className="text-[10px] text-zinc-400">New user activation</span>
-                        </div>
-                        <span className="font-bold text-[#FFC928]">+₹250</span>
-                      </div>
-                    </div>
                   </div>
                 )}
 
@@ -543,7 +819,6 @@
                       <div className="text-3xl font-extrabold text-[#FFC928] font-display">₹{currentUser.walletBalance.toLocaleString()}</div>
                     </div>
 
-                    {/* Withdrawal Form */}
                     <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
                       <h3 className="font-bold text-sm text-white">Request Payout</h3>
                       <div>
@@ -564,29 +839,13 @@
                           }
                           setCurrentUser(prev => ({ ...prev, walletBalance: prev.walletBalance - amt, pendingBalance: prev.pendingBalance + amt }));
                           setWithdrawals(prev => [{ id: 'w_' + Date.now(), amount: amt, method: 'UPI', details: upi, status: 'pending', date: 'Just now' }, ...prev]);
-                          confetti();
-                          alert('Withdrawal request submitted for admin review!');
+                          if (window.confetti) confetti();
+                          alert('Withdrawal request submitted!');
                         }}
                         className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] text-xs font-bold hover:bg-[#D99B16]"
                       >
                         Submit Withdrawal Request
                       </button>
-                    </div>
-
-                    {/* Withdrawal History */}
-                    <div className="space-y-2">
-                      <h4 className="font-bold text-xs text-white">Withdrawal History</h4>
-                      {withdrawals.map(w => (
-                        <div key={w.id} className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
-                          <div>
-                            <span className="font-bold text-white block">₹{w.amount.toLocaleString()} via {w.method}</span>
-                            <span className="text-[10px] text-zinc-400 font-mono">{w.details}</span>
-                          </div>
-                          <span className={'px-2 py-0.5 rounded text-[10px] font-bold uppercase ' + (w.status === 'paid' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400')}>
-                            {w.status}
-                          </span>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 )}
@@ -605,11 +864,13 @@
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {offers.filter(o => o.title.toLowerCase().includes(searchQuery.toLowerCase())).map(o => (
                         <div key={o.id} onClick={() => setSelectedOffer(o)} className="rounded-2xl bg-[#15171D] border border-white/[0.08] p-3 cursor-pointer hover:border-[#FFC928]/40">
-                          <img src={o.imageUrl} className="w-full h-32 object-cover rounded-xl mb-2" />
+                          <div className="h-32 bg-white rounded-xl mb-2 flex items-center justify-center p-2">
+                            <img src={o.imageUrl} className="max-h-full max-w-full object-contain" />
+                          </div>
                           <span className="text-[10px] text-[#FFC928] font-bold">{o.discountPercent}% OFF • {o.partnerName}</span>
                           <h4 className="font-bold text-xs text-white truncate mt-0.5">{o.title}</h4>
                           <div className="flex items-baseline justify-between mt-2">
-                            <span className="font-extrabold text-sm text-white">₹{o.discountedPrice.toLocaleString()}</span>
+                            <span className="font-extrabold text-sm text-white">₹{Number(o.discountedPrice).toLocaleString()}</span>
                             <span className="text-xs font-bold text-[#FFC928]">Earn {o.commissionRate}</span>
                           </div>
                         </div>
@@ -627,30 +888,211 @@
                       <Icons.Share2 />
                     </button>
                     <button onClick={() => setShowAdminLogin(true)} className="w-full p-3 rounded-2xl bg-[#15171D] border border-[#FFC928]/30 flex items-center justify-between text-xs text-[#FFC928] font-bold">
-                      <span>Administrator Login</span>
+                      <span>Administrator Login (Add EarnKaro Products)</span>
                       <Icons.Shield />
                     </button>
                   </div>
                 )}
 
-                {/* TAB: ADMIN (12 Modules) */}
+                {/* TAB: ADMIN PANEL (WITH EARNKARO AUTO-FETCH) */}
                 {activeTab === 'admin' && (
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     <div className="flex items-center justify-between">
-                      <h2 className="font-display font-bold text-xl text-white">Admin Management</h2>
-                      <button onClick={() => setActiveTab('home')} className="text-xs text-[#FFC928] font-bold">Back to App</button>
+                      <h2 className="font-display font-bold text-xl text-white">Admin Console</h2>
+                      <button onClick={() => setActiveTab('home')} className="px-3 py-1 rounded-lg bg-[#15171D] border border-[#FFC928]/40 text-xs text-[#FFC928] font-bold">
+                        ← Back to App
+                      </button>
                     </div>
 
-                    {/* Partner Management (CRITICAL DYNAMIC URL CONTROL) */}
-                    <div className="p-4 rounded-2xl bg-[#15171D] border border-[#FFC928]/40 space-y-3">
+                    {/* NEW: EARNKARO LINK AUTO-FETCH PRODUCT ADDER */}
+                    <div className="p-4 rounded-2xl bg-[#15171D] border-2 border-[#FFC928] space-y-3 shadow-lg shadow-[#FFC928]/10">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-sm text-white">Partner Management (Dynamic URLs)</h3>
+                        <h3 className="font-display font-bold text-sm text-[#FFC928] flex items-center gap-1.5">
+                          <Icons.Sparkles />
+                          <span>Add Product via EarnKaro Link (Auto-Fetch)</span>
+                        </h3>
+                        <span className="text-[10px] bg-[#FFC928]/20 text-[#FFC928] px-2 py-0.5 rounded font-bold">fktr.in / amzn.to</span>
+                      </div>
+
+                      <p className="text-[11px] text-zinc-400">
+                        Flipkart/Amazon से प्रोडक्ट लिंक लेकर EarnKaro पर अपना प्रॉफिट लिंक (`https://fktr.in/...`) बनाएं और नीचे पेस्ट करें:
+                      </p>
+
+                      {/* Link Input + Auto-Fetch Button */}
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input 
+                          type="text"
+                          value={ekUrl}
+                          onChange={(e) => setEkUrl(e.target.value)}
+                          onPaste={(e) => {
+                            const pasted = e.clipboardData.getData('text');
+                            setEkUrl(pasted);
+                            setTimeout(() => handleAutoFetchLink(pasted), 150);
+                          }}
+                          placeholder="Paste EarnKaro link here (e.g. https://fktr.in/tj5Ye2T)"
+                          className="flex-1 px-3 py-2.5 rounded-xl bg-[#08090C] border border-[#FFC928]/50 text-xs text-white font-mono focus:outline-none focus:border-[#FFC928]"
+                        />
+                        <button
+                          onClick={() => handleAutoFetchLink()}
+                          disabled={isFetchingMeta}
+                          className="px-4 py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-extrabold text-xs flex items-center justify-center gap-1.5 hover:bg-[#D99B16] disabled:opacity-50 shrink-0"
+                        >
+                          <Icons.Refresh />
+                          <span>{isFetchingMeta ? 'Fetching...' : '⚡ Auto-Fetch Details'}</span>
+                        </button>
+                      </div>
+
+                      {fetchStatusMsg && (
+                        <div className="p-2.5 rounded-xl bg-[#08090C] border border-white/10 text-[11px] text-[#FFC928]">
+                          {fetchStatusMsg}
+                        </div>
+                      )}
+
+                      {/* Auto-Filled Product Fields + Live Image Preview */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        <div className="space-y-2">
+                          <div>
+                            <label className="text-[10px] text-zinc-400 block mb-1">Product Title (Auto-Filled)</label>
+                            <input 
+                              type="text"
+                              value={prodTitle}
+                              onChange={e => setProdTitle(e.target.value)}
+                              placeholder="Product Name"
+                              className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] text-zinc-400 block mb-1">Product Image URL (Auto-Filled)</label>
+                            <input 
+                              type="text"
+                              value={prodImage}
+                              onChange={e => setProdImage(e.target.value)}
+                              placeholder="https://rukminim2.flixcart.com/..."
+                              className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-white font-mono"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[10px] text-zinc-400 block mb-1">Live Deal Price (₹)</label>
+                              <input 
+                                type="number"
+                                value={prodPrice}
+                                onChange={e => setProdPrice(e.target.value)}
+                                placeholder="e.g. 1499"
+                                className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-[#FFC928] font-bold"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-zinc-400 block mb-1">Original MRP (₹)</label>
+                              <input 
+                                type="number"
+                                value={prodMrp}
+                                onChange={e => setProdMrp(e.target.value)}
+                                placeholder="e.g. 2499"
+                                className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-zinc-300"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-[10px] text-zinc-400 block mb-1">Store / Partner</label>
+                              <select 
+                                value={prodPartner}
+                                onChange={e => setProdPartner(e.target.value)}
+                                className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-white"
+                              >
+                                <option value="Flipkart">Flipkart</option>
+                                <option value="Amazon">Amazon</option>
+                                <option value="Myntra">Myntra</option>
+                                <option value="Ajio">Ajio</option>
+                                <option value="Meesho">Meesho</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-zinc-400 block mb-1">User Commission Text</label>
+                              <input 
+                                type="text"
+                                value={prodCommission}
+                                onChange={e => setProdCommission(e.target.value)}
+                                placeholder="e.g. 7% (₹150)"
+                                className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Live Preview Box */}
+                        <div className="rounded-xl bg-[#08090C] border border-white/10 p-3 flex flex-col items-center justify-center text-center">
+                          <span className="text-[10px] text-zinc-500 uppercase font-bold mb-2">Live Product Card Preview</span>
+                          {prodImage ? (
+                            <img src={prodImage} alt="Preview" className="h-28 object-contain rounded-lg bg-white p-1.5 mb-2" />
+                          ) : (
+                            <div className="h-28 w-full rounded-lg bg-[#15171D] flex items-center justify-center text-xs text-zinc-500 mb-2">
+                              Image Preview
+                            </div>
+                          )}
+                          <p className="text-xs font-bold text-white line-clamp-2">{prodTitle || 'Product Title Preview'}</p>
+                          <p className="text-sm font-extrabold text-[#FFC928] mt-1">
+                            {prodPrice ? `₹${Number(prodPrice).toLocaleString()}` : '₹0'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={handleAddProductOffer}
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FFC928] to-[#D99B16] text-[#08090C] font-extrabold text-xs shadow-lg"
+                      >
+                        + Publish Product with EarnKaro Commission Link
+                      </button>
+                    </div>
+
+                    {/* Manage Existing Products & Sync Live Price */}
+                    <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
+                      <h3 className="font-bold text-sm text-white">Manage Products & Live Prices ({offers.length})</h3>
+                      <div className="space-y-2">
+                        {offers.map(o => (
+                          <div key={o.id} className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                            <div className="flex items-center gap-2.5">
+                              <img src={o.imageUrl} className="w-10 h-10 rounded bg-white object-contain p-0.5 shrink-0" />
+                              <div>
+                                <div className="font-bold text-white line-clamp-1">{o.title}</div>
+                                <div className="text-[11px] text-[#FFC928] font-bold">
+                                  Live Price: ₹{Number(o.discountedPrice).toLocaleString()} • <span className="text-zinc-400 font-mono">{o.affiliateUrl}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button
+                                onClick={() => handleRefreshOfferPrice(o.id, o.affiliateUrl)}
+                                className="px-2.5 py-1.5 rounded-lg bg-[#FFC928]/15 border border-[#FFC928]/40 text-[#FFC928] font-bold text-[10px] flex items-center gap-1"
+                              >
+                                <Icons.Refresh /> Sync Price
+                              </button>
+                              <button
+                                onClick={() => setOffers(prev => prev.filter(item => item.id !== o.id))}
+                                className="p-1.5 rounded-lg bg-rose-500/15 text-rose-400 hover:bg-rose-500/30"
+                              >
+                                <Icons.Trash />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Partner Management */}
+                    <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-sm text-white">Partner Stores (Dynamic URLs)</h3>
                         <button 
                           onClick={() => {
                             const name = prompt('Partner Name (e.g. Croma):');
                             const url = prompt('Exact Affiliate URL:');
                             if (name && url) {
-                              setPartners(prev => [...prev, { id: 'p_' + Date.now(), name, affiliateUrl: url, commissionInfo: 'Up to 10%', logo: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=160', description: 'Partner network', clickCount: 0 }]);
+                              setPartners(prev => [...prev, { id: 'p_' + Date.now(), name, affiliateUrl: url, commissionInfo: 'Up to 10%', logo: '', description: 'Partner network', clickCount: 0 }]);
                             }
                           }}
                           className="px-2 py-1 rounded bg-[#FFC928] text-[#08090C] text-[10px] font-bold"
@@ -677,9 +1119,7 @@
                                 className="flex-1 px-2 py-1 rounded bg-[#15171D] border border-white/10 text-[10px] font-mono text-[#FFC928]"
                               />
                               <button 
-                                onClick={() => {
-                                  setPartners(prev => prev.filter(item => item.id !== p.id));
-                                }}
+                                onClick={() => setPartners(prev => prev.filter(item => item.id !== p.id))}
                                 className="text-rose-400 p-1"
                               >
                                 <Icons.Trash />
@@ -689,40 +1129,12 @@
                         ))}
                       </div>
                     </div>
-
-                    {/* Pending Withdrawals Approval Desk */}
-                    <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
-                      <h3 className="font-bold text-sm text-white">Pending Withdrawals Desk</h3>
-                      {withdrawals.filter(w => w.status === 'pending').map(w => (
-                        <div key={w.id} className="p-3 rounded-xl bg-[#08090C] border border-white/[0.06] flex items-center justify-between text-xs">
-                          <div>
-                            <span className="font-bold text-white block">₹{w.amount.toLocaleString()}</span>
-                            <span className="text-[10px] text-zinc-400 font-mono">{w.details}</span>
-                          </div>
-                          <div className="flex gap-1.5">
-                            <button 
-                              onClick={() => {
-                                setWithdrawals(prev => prev.map(item => item.id === w.id ? { ...item, status: 'paid' } : item));
-                                setCurrentUser(prev => ({ ...prev, pendingBalance: Math.max(0, prev.pendingBalance - w.amount) }));
-                                alert('Withdrawal marked as PAID!');
-                              }}
-                              className="px-2.5 py-1 rounded bg-emerald-500 text-[#08090C] font-bold text-[10px]"
-                            >
-                              Approve & Pay
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                      {withdrawals.filter(w => w.status === 'pending').length === 0 && (
-                        <p className="text-xs text-zinc-500">No pending requests.</p>
-                      )}
-                    </div>
                   </div>
                 )}
               </main>
 
               {/* Fixed 5-Item Bottom Navigation Bar */}
-              <nav className="absolute bottom-0 left-0 right-0 h-16 bg-[#08090C]/95 backdrop-blur-md border-t border-white/[0.08] flex items-center justify-around px-2 z-40">
+              <nav className="fixed bottom-0 left-0 right-0 max-w-7xl mx-auto h-16 bg-[#08090C]/95 backdrop-blur-md border-t border-white/[0.08] flex items-center justify-around px-2 z-40">
                 <button onClick={() => setActiveTab('home')} className={'flex flex-col items-center ' + (activeTab === 'home' ? 'text-[#FFC928]' : 'text-zinc-500')}>
                   <Icons.Home />
                   <span className="text-[9px] font-bold mt-1">Home</span>
@@ -731,7 +1143,6 @@
                   <Icons.TrendingUp />
                   <span className="text-[9px] font-bold mt-1">Earnings</span>
                 </button>
-                {/* Center Elevated WALLET Button with Golden Glow */}
                 <div className="-mt-6">
                   <button onClick={() => setActiveTab('wallet')} className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#8C6207] via-[#FFC928] to-[#FFF2B2] p-[2px] shadow-lg shadow-[#FFC928]/40 flex items-center justify-center">
                     <div className={'w-full h-full rounded-full flex items-center justify-center text-[#FFC928] ' + (activeTab === 'wallet' ? 'bg-[#1C1F27]' : 'bg-[#15171D]')}>
@@ -752,7 +1163,7 @@
             </div>
           </div>
 
-          {/* Android Custom Tabs Simulator Modal */}
+          {/* Outbound Link Redirect Modal */}
           {customTab.open && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
               <div className="w-full max-w-md bg-[#121419] rounded-2xl border border-white/10 overflow-hidden shadow-2xl p-4 text-center space-y-4">
@@ -761,11 +1172,11 @@
                   <button onClick={() => setCustomTab({ open: false, url: '', title: '' })} className="text-zinc-400 hover:text-white"><Icons.X /></button>
                 </div>
                 <div className="p-3 bg-[#08090C] rounded-xl text-left border border-[#FFC928]/30">
-                  <span className="text-[10px] text-zinc-400 uppercase font-semibold">Exact Admin Affiliate URL:</span>
+                  <span className="text-[10px] text-zinc-400 uppercase font-semibold">Your Active Commission Link:</span>
                   <p className="text-xs font-mono text-[#FFC928] break-all mt-1">{customTab.url}</p>
                 </div>
                 <button onClick={() => window.open(customTab.url, '_blank')} className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs">
-                  Continue to Merchant Website
+                  Continue to Store & Buy
                 </button>
               </div>
             </div>
@@ -779,14 +1190,14 @@
                   <h3 className="font-bold text-white text-base">Secret Admin Gateway</h3>
                   <button onClick={() => setShowAdminLogin(false)} className="text-zinc-400"><Icons.X /></button>
                 </div>
-                <p className="text-xs text-zinc-400">Triple tap detected. Enter password to unlock admin console.</p>
+                <p className="text-xs text-zinc-400">Enter password to unlock EarnKaro Auto-Fetch Admin Panel.</p>
                 <input id="adminPass" type="password" defaultValue="Admin@2026" className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs" />
                 <button 
                   onClick={() => {
                     setIsAdmin(true);
                     setShowAdminLogin(false);
                     setActiveTab('admin');
-                    confetti();
+                    if (window.confetti) confetti();
                   }}
                   className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs"
                 >
@@ -808,7 +1219,7 @@
                 <button 
                   onClick={() => {
                     navigator.clipboard.writeText(currentUser.referralCode);
-                    confetti();
+                    if (window.confetti) confetti();
                     alert('Referral code copied to clipboard!');
                     setShowShareModal(false);
                   }}
@@ -824,18 +1235,20 @@
           {selectedOffer && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
               <div className="w-full max-w-sm bg-[#15171D] rounded-2xl border border-white/10 overflow-hidden shadow-2xl space-y-3 p-4">
-                <img src={selectedOffer.imageUrl} className="w-full h-40 object-cover rounded-xl" />
-                <div className="flex items-center justify-between text-xs font-bold">
+                <div className="h-44 bg-white rounded-xl flex items-center justify-center p-2">
+                  <img src={selectedOffer.imageUrl} className="max-h-full max-w-full object-contain" />
+                </div>
+                <div className="flex items-start justify-between gap-2 text-xs font-bold">
                   <span className="text-white">{selectedOffer.title}</span>
-                  <button onClick={() => setSelectedOffer(null)} className="text-zinc-400"><Icons.X /></button>
+                  <button onClick={() => setSelectedOffer(null)} className="text-zinc-400 shrink-0"><Icons.X /></button>
                 </div>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-lg font-extrabold text-white">₹{selectedOffer.discountedPrice.toLocaleString()}</span>
+                  <span className="text-lg font-extrabold text-white">₹{Number(selectedOffer.discountedPrice).toLocaleString()}</span>
                   <span className="text-xs font-bold text-[#FFC928]">You Earn: {selectedOffer.commissionRate}</span>
                 </div>
                 <button 
                   onClick={() => {
-                    openAffiliateLink(selectedOffer.affiliateUrl, selectedOffer.title, selectedOffer.partnerId, selectedOffer.id);
+                    openAffiliateLink(selectedOffer.affiliateUrl, selectedOffer.title, selectedOffer.partnerId);
                     setSelectedOffer(null);
                   }}
                   className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs"
