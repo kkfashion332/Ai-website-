@@ -78,7 +78,7 @@
 <body class="bg-[#08090C] text-[#F3F4F6] selection:bg-[#FFC928]/30 selection:text-[#FFC928]">
   <div id="root"></div>
 
-  <!-- Standalone Application React Code -->
+  <!-- Standalone Application Code -->
   <script type="text/babel">
     const { useState, useEffect, useCallback, useMemo } = React;
 
@@ -244,9 +244,7 @@
         { id: 'w2', amount: 4500, method: 'UPI', details: 'kasifbhai@okaxis', status: 'pending', date: '2026-11-08' }
       ]);
       const [activeTab, setActiveTab] = useState('home');
-      const [deviceView, setDeviceView] = useState('phone'); // 'phone' or 'fullscreen'
       const [searchQuery, setSearchQuery] = useState('');
-      const [selectedCategory, setSelectedCategory] = useState('All');
 
       // Modals
       const [customTab, setCustomTab] = useState({ open: false, url: '', title: '' });
@@ -270,7 +268,6 @@
 
       // Outbound Affiliate Link Opener
       const openAffiliateLink = (url, title, partnerId, offerId) => {
-        // Track click
         if (partnerId) {
           setPartners(prev => prev.map(p => p.id === partnerId ? { ...p, clickCount: p.clickCount + 1 } : p));
         }
@@ -280,453 +277,427 @@
         setCustomTab({ open: true, url, title });
       };
 
-      // Save on change
+      // Persistence
       useEffect(() => { localStorage.setItem('ap_partners', JSON.stringify(partners)); }, [partners]);
       useEffect(() => { localStorage.setItem('ap_offers', JSON.stringify(offers)); }, [offers]);
       useEffect(() => { localStorage.setItem('ap_user', JSON.stringify(currentUser)); }, [currentUser]);
       useEffect(() => { localStorage.setItem('ap_withdrawals', JSON.stringify(withdrawals)); }, [withdrawals]);
 
       return (
-        <div className="min-h-screen bg-[#050608] text-[#F3F4F6] flex flex-col items-center">
+        <div className="min-h-screen bg-[#08090C] text-[#F3F4F6] flex flex-col">
           
-          {/* Top Control Bar */}
-          <div className="w-full bg-[#0E1015] border-b border-white/[0.08] px-4 py-2 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#FFC928]"></span>
-              <span className="font-bold font-display text-white">AffiliatePro</span>
-              <span className="text-zinc-500 hidden sm:inline">• Standalone Complete Edition</span>
+          {/* Header with Secret Triple-Tap Gesture */}
+          <header className="sticky top-0 z-30 bg-[#08090C]/90 backdrop-blur-md border-b border-white/[0.08] px-4 sm:px-6 py-3 flex items-center justify-between max-w-7xl w-full mx-auto">
+            <div 
+              onClick={handleLogoTap} 
+              className="flex items-center gap-2.5 cursor-pointer select-none group active:scale-95 transition-transform"
+              title="Triple tap logo to access Secret Admin Panel"
+            >
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#8C6207] via-[#FFC928] to-[#FFF2B2] p-[1.5px] shadow-lg shadow-[#FFC928]/20">
+                <div className="w-full h-full bg-[#121419] rounded-[10px] flex items-center justify-center font-display font-extrabold text-base text-[#FFC928]">
+                  AP
+                </div>
+              </div>
+              <div>
+                <h1 className="font-display font-bold text-lg text-white leading-tight">
+                  Affiliate<span className="text-[#FFC928]">Pro</span>
+                </h1>
+                <span className="text-[10px] text-zinc-400 block -mt-0.5">Earn More • Grow Faster</span>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Simulate Triple Tap button */}
+            {/* Header Actions */}
+            <div className="flex items-center gap-2.5">
               <button 
                 onClick={() => { handleLogoTap(); handleLogoTap(); handleLogoTap(); }}
-                className="px-2.5 py-1 rounded-md bg-[#FFC928]/15 border border-[#FFC928]/40 text-[#FFC928] font-bold text-[11px] flex items-center gap-1 hover:bg-[#FFC928]/25"
-                title="Triple tap logo or click here"
+                className="px-2.5 py-1 rounded-md bg-[#FFC928]/15 border border-[#FFC928]/30 text-[#FFC928] font-bold text-xs flex items-center gap-1 hover:bg-[#FFC928]/25"
+                title="Simulate 3 Taps"
               >
                 <Icons.Sparkles />
-                <span>Secret 3-Tap Admin</span>
+                <span className="hidden sm:inline">Secret 3-Tap Admin</span>
               </button>
 
               <button 
-                onClick={() => setDeviceView(deviceView === 'phone' ? 'fullscreen' : 'phone')}
-                className="px-2.5 py-1 rounded-md bg-[#1C1F27] border border-white/10 text-zinc-300 hover:text-white"
+                onClick={() => setActiveTab('wallet')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#15171D] border border-[#FFC928]/30 hover:border-[#FFC928] text-xs font-bold text-[#FFC928]"
               >
-                {deviceView === 'phone' ? 'Full View' : 'Phone Frame'}
+                <Icons.Wallet />
+                <span>₹{currentUser.walletBalance.toLocaleString()}</span>
               </button>
-            </div>
-          </div>
 
-          {/* App Body (Titanium Phone Frame or Expansive Canvas) */}
-          <div className={deviceView === 'phone' ? 'py-6 px-2 w-full max-w-[430px]' : 'w-full max-w-6xl'}>
-            <div className={deviceView === 'phone' ? 'relative w-full h-[890px] bg-[#08090C] rounded-[44px] border-[10px] border-[#20232C] shadow-2xl overflow-hidden flex flex-col ring-1 ring-white/10' : 'w-full bg-[#08090C] min-h-[90vh] flex flex-col'}>
-              
-              {/* Phone Status Bar */}
-              {deviceView === 'phone' && (
-                <div className="h-9 px-6 bg-[#08090C] flex items-center justify-between text-[11px] text-zinc-400 select-none">
-                  <span className="font-bold text-white">9:41</span>
-                  <div className="w-4 h-4 rounded-full bg-black border border-zinc-800 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
-                  </div>
-                  <span className="text-[#FFC928] font-bold">5G 98%</span>
-                </div>
-              )}
-
-              {/* App Header with Triple-Tap Gesture */}
-              <header className="sticky top-0 z-30 bg-[#08090C]/90 backdrop-blur-md border-b border-white/[0.08] px-4 py-2.5 flex items-center justify-between">
-                <div 
-                  onClick={handleLogoTap} 
-                  className="flex items-center gap-2 cursor-pointer select-none group active:scale-95 transition-transform"
-                  title="Triple tap logo to access Secret Admin Panel"
+              {isAdmin && (
+                <button 
+                  onClick={() => setActiveTab('admin')}
+                  className="px-3 py-1.5 rounded-lg bg-[#FFC928] text-[#08090C] text-xs font-bold"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#8C6207] via-[#FFC928] to-[#FFF2B2] p-[1.5px] shadow-lg shadow-[#FFC928]/20">
-                    <div className="w-full h-full bg-[#121419] rounded-[10px] flex items-center justify-center font-display font-extrabold text-base text-[#FFC928]">
-                      AP
-                    </div>
-                  </div>
-                  <div>
-                    <h1 className="font-display font-bold text-base text-white leading-tight">
-                      Affiliate<span className="text-[#FFC928]">Pro</span>
-                    </h1>
-                    <span className="text-[10px] text-zinc-400 block -mt-0.5">Earn More • Grow Faster</span>
+                  Admin Console
+                </button>
+              )}
+            </div>
+          </header>
+
+          {/* Main Full-Width Content Container */}
+          <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 space-y-6 pb-28">
+            
+            {/* TAB: HOME */}
+            {activeTab === 'home' && (
+              <div className="space-y-6">
+                {/* Banner Carousel Card */}
+                <div 
+                  className="relative rounded-2xl overflow-hidden border border-white/10 shadow-xl bg-[#15171D] h-48 sm:h-56 cursor-pointer"
+                  onClick={() => openAffiliateLink('https://www.amazon.in/?tag=affiliatepro21-21', 'Festive Super Sale')}
+                >
+                  <img src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=1200" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#08090C] via-[#08090C]/50 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 sm:left-6 sm:bottom-6">
+                    <span className="text-[10px] font-bold text-[#FFC928] uppercase tracking-wider bg-black/60 px-2.5 py-1 rounded">Mega Campaign Active</span>
+                    <h2 className="font-display font-extrabold text-xl sm:text-2xl text-white mt-1.5">Festive Electronics Super Sale</h2>
+                    <p className="text-xs sm:text-sm text-zinc-300">Flat 45% Off + Extra 8% Cash Reward on Amazon India</p>
                   </div>
                 </div>
 
-                {/* Header Actions */}
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => setActiveTab('wallet')}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#15171D] border border-[#FFC928]/30 hover:border-[#FFC928] text-xs font-bold text-[#FFC928]"
-                  >
-                    <Icons.Wallet />
-                    <span>₹{currentUser.walletBalance.toLocaleString()}</span>
-                  </button>
-
-                  {isAdmin && (
-                    <button 
-                      onClick={() => setActiveTab('admin')}
-                      className="px-2 py-1 rounded bg-[#FFC928] text-[#08090C] text-xs font-bold"
-                    >
-                      Admin
-                    </button>
-                  )}
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08]">
+                    <span className="text-xs text-zinc-400 font-semibold block">Total Clicks</span>
+                    <span className="text-2xl font-extrabold text-white font-display mt-0.5">{currentUser.totalClicks}</span>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08]">
+                    <span className="text-xs text-zinc-400 font-semibold block">Referrals</span>
+                    <span className="text-2xl font-extrabold text-white font-display mt-0.5">{currentUser.totalReferrals}</span>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-[#15171D] border border-[#FFC928]/30">
+                    <span className="text-xs text-zinc-400 font-semibold block">Total Earnings</span>
+                    <span className="text-2xl font-extrabold text-[#FFC928] font-display mt-0.5">₹{currentUser.totalEarnings.toLocaleString()}</span>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08]">
+                    <span className="text-xs text-zinc-400 font-semibold block">Available Wallet</span>
+                    <span className="text-2xl font-extrabold text-emerald-400 font-display mt-0.5">₹{currentUser.walletBalance.toLocaleString()}</span>
+                  </div>
                 </div>
-              </header>
 
-              {/* Scrollable Main Area */}
-              <main className="flex-1 overflow-y-auto p-4 space-y-5 pb-24">
-                
-                {/* TAB: HOME */}
-                {activeTab === 'home' && (
-                  <div className="space-y-5">
-                    {/* Banner Carousel Card */}
-                    <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-xl bg-[#15171D] h-44 cursor-pointer" onClick={() => openAffiliateLink('https://www.amazon.in/?tag=affiliatepro21-21', 'Festive Super Sale')}>
-                      <img src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#08090C] via-[#08090C]/50 to-transparent" />
-                      <div className="absolute bottom-3 left-4 right-4">
-                        <span className="text-[10px] font-bold text-[#FFC928] uppercase tracking-wider bg-black/60 px-2 py-0.5 rounded">Mega Sale Active</span>
-                        <h2 className="font-display font-extrabold text-lg text-white mt-1">Festive Electronics Super Sale</h2>
-                        <p className="text-xs text-zinc-300">Flat 45% Off + Extra 8% Cash Reward</p>
-                      </div>
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <div className="p-3 rounded-2xl bg-[#15171D] border border-white/[0.08]">
-                        <span className="text-[10px] text-zinc-400 font-semibold block">Total Clicks</span>
-                        <span className="text-xl font-extrabold text-white font-display">{currentUser.totalClicks}</span>
-                      </div>
-                      <div className="p-3 rounded-2xl bg-[#15171D] border border-white/[0.08]">
-                        <span className="text-[10px] text-zinc-400 font-semibold block">Referrals</span>
-                        <span className="text-xl font-extrabold text-white font-display">{currentUser.totalReferrals}</span>
-                      </div>
-                      <div className="p-3 rounded-2xl bg-[#15171D] border border-[#FFC928]/30">
-                        <span className="text-[10px] text-zinc-400 font-semibold block">Total Earnings</span>
-                        <span className="text-xl font-extrabold text-[#FFC928] font-display">₹{currentUser.totalEarnings.toLocaleString()}</span>
-                      </div>
-                      <div className="p-3 rounded-2xl bg-[#15171D] border border-white/[0.08]">
-                        <span className="text-[10px] text-zinc-400 font-semibold block">Available Wallet</span>
-                        <span className="text-xl font-extrabold text-white font-display">₹{currentUser.walletBalance.toLocaleString()}</span>
-                      </div>
-                    </div>
-
-                    {/* Partner Section (Amazon, Flipkart, Myntra, Ajio, Meesho) */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2.5">
-                        <h3 className="font-display font-bold text-base text-white">Affiliate Partner Stores</h3>
-                        <span className="text-[11px] text-[#FFC928] font-bold">Admin Verified URLs</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        {partners.map(p => (
-                          <div key={p.id} className="p-3 rounded-2xl bg-[#15171D] border border-white/[0.08] hover:border-[#FFC928]/40 flex flex-col justify-between">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <img src={p.logo} className="w-8 h-8 rounded-lg object-cover" />
-                                <div className="min-w-0">
-                                  <h4 className="font-bold text-xs text-white truncate">{p.name}</h4>
-                                  <span className="text-[10px] text-[#FFC928] font-semibold block">{p.commissionInfo}</span>
-                                </div>
-                              </div>
-                              <p className="text-[10px] text-zinc-400 line-clamp-2">{p.description}</p>
-                            </div>
-                            <button
-                              onClick={() => openAffiliateLink(p.affiliateUrl, p.name, p.id)}
-                              className="mt-3 w-full py-1.5 rounded-xl bg-[#252833] hover:bg-[#FFC928] hover:text-[#08090C] text-xs font-bold text-zinc-200 transition-colors flex items-center justify-center gap-1"
-                            >
-                              <span>Open Store</span>
-                              <Icons.ExternalLink />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Top Deals */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2.5">
-                        <h3 className="font-display font-bold text-base text-white">Trending Deals</h3>
-                        <button onClick={() => setActiveTab('offers')} className="text-xs text-[#FFC928] font-semibold">View All</button>
-                      </div>
-                      <div className="space-y-2.5">
-                        {offers.map(o => (
-                          <div key={o.id} onClick={() => setSelectedOffer(o)} className="p-2.5 rounded-2xl bg-[#15171D] border border-white/[0.08] flex items-center gap-3 cursor-pointer hover:border-[#FFC928]/30">
-                            <img src={o.imageUrl} className="w-16 h-16 rounded-xl object-cover" />
-                            <div className="flex-1 min-w-0">
-                              <span className="text-[10px] font-bold text-[#FFC928]">{o.discountPercent}% OFF • {o.partnerName}</span>
-                              <h4 className="font-bold text-xs text-white truncate">{o.title}</h4>
-                              <div className="flex items-baseline gap-2 mt-0.5">
-                                <span className="font-bold text-sm text-white">₹{o.discountedPrice.toLocaleString()}</span>
-                                <span className="text-[10px] text-zinc-400 line-through">₹{o.originalPrice.toLocaleString()}</span>
-                              </div>
+                {/* Partner Stores (Amazon, Flipkart, Myntra, Ajio, Meesho) */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-display font-bold text-lg text-white">Affiliate Partner Stores</h3>
+                    <span className="text-xs text-[#FFC928] font-bold">Admin Verified Tracking Links</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                    {partners.map(p => (
+                      <div key={p.id} className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] hover:border-[#FFC928]/40 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center gap-3 mb-2.5">
+                            <img src={p.logo} className="w-10 h-10 rounded-xl object-cover" />
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-sm text-white truncate">{p.name}</h4>
+                              <span className="text-xs text-[#FFC928] font-semibold block">{p.commissionInfo}</span>
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB: EARNINGS */}
-                {activeTab === 'earnings' && (
-                  <div className="space-y-4">
-                    <h2 className="font-display font-bold text-xl text-white">Earnings & Commissions</h2>
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1C1F27] to-[#15171D] border border-[#FFC928]/30">
-                      <span className="text-[10px] text-zinc-400 font-semibold uppercase">Total Confirmed</span>
-                      <div className="text-3xl font-extrabold text-[#FFC928] font-display mt-0.5">₹{currentUser.totalEarnings.toLocaleString()}</div>
-                      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/[0.08] text-xs">
-                        <div>
-                          <span className="text-zinc-400 text-[10px] block">Pending Verification</span>
-                          <span className="font-bold text-amber-400">₹{currentUser.pendingBalance.toLocaleString()}</span>
+                          <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">{p.description}</p>
                         </div>
-                        <div>
-                          <span className="text-zinc-400 text-[10px] block">Available in Wallet</span>
-                          <span className="font-bold text-emerald-400">₹{currentUser.walletBalance.toLocaleString()}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h3 className="font-bold text-xs text-white uppercase tracking-wider">Recent Transactions</h3>
-                      <div className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
-                        <div>
-                          <span className="font-bold text-white block">Samsung S24 Ultra Sale</span>
-                          <span className="text-[10px] text-zinc-400">Amazon India Commission</span>
-                        </div>
-                        <span className="font-bold text-[#FFC928]">+₹5,084</span>
-                      </div>
-                      <div className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
-                        <div>
-                          <span className="font-bold text-white block">Referral Bonus: Rohit</span>
-                          <span className="text-[10px] text-zinc-400">New user activation</span>
-                        </div>
-                        <span className="font-bold text-[#FFC928]">+₹250</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB: WALLET */}
-                {activeTab === 'wallet' && (
-                  <div className="space-y-4">
-                    <h2 className="font-display font-bold text-xl text-white">Affiliate Wallet & Payout</h2>
-                    <div className="p-4 rounded-2xl bg-[#15171D] border border-[#FFC928]/30">
-                      <span className="text-xs text-zinc-400">Available Balance</span>
-                      <div className="text-3xl font-extrabold text-[#FFC928] font-display">₹{currentUser.walletBalance.toLocaleString()}</div>
-                    </div>
-
-                    {/* Withdrawal Form */}
-                    <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
-                      <h3 className="font-bold text-sm text-white">Request Payout</h3>
-                      <div>
-                        <label className="text-[11px] text-zinc-400 block mb-1">Amount (₹)</label>
-                        <input id="wdrAmount" type="number" defaultValue="2000" className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs font-bold" />
-                      </div>
-                      <div>
-                        <label className="text-[11px] text-zinc-400 block mb-1">UPI ID or Bank Details</label>
-                        <input id="wdrUpi" type="text" defaultValue="kasifbhai@okaxis" className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs font-mono" />
-                      </div>
-                      <button 
-                        onClick={() => {
-                          const amt = Number(document.getElementById('wdrAmount').value);
-                          const upi = document.getElementById('wdrUpi').value;
-                          if (amt > currentUser.walletBalance) {
-                            alert('Insufficient available balance!');
-                            return;
-                          }
-                          setCurrentUser(prev => ({ ...prev, walletBalance: prev.walletBalance - amt, pendingBalance: prev.pendingBalance + amt }));
-                          setWithdrawals(prev => [{ id: 'w_' + Date.now(), amount: amt, method: 'UPI', details: upi, status: 'pending', date: 'Just now' }, ...prev]);
-                          confetti();
-                          alert('Withdrawal request submitted for admin review!');
-                        }}
-                        className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] text-xs font-bold hover:bg-[#D99B16]"
-                      >
-                        Submit Withdrawal Request
-                      </button>
-                    </div>
-
-                    {/* Withdrawal History */}
-                    <div className="space-y-2">
-                      <h4 className="font-bold text-xs text-white">Withdrawal History</h4>
-                      {withdrawals.map(w => (
-                        <div key={w.id} className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
-                          <div>
-                            <span className="font-bold text-white block">₹{w.amount.toLocaleString()} via {w.method}</span>
-                            <span className="text-[10px] text-zinc-400 font-mono">{w.details}</span>
-                          </div>
-                          <span className={'px-2 py-0.5 rounded text-[10px] font-bold uppercase ' + (w.status === 'paid' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400')}>
-                            {w.status}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB: OFFERS */}
-                {activeTab === 'offers' && (
-                  <div className="space-y-4">
-                    <h2 className="font-display font-bold text-xl text-white">All Deals & Offers</h2>
-                    <input 
-                      type="text" 
-                      value={searchQuery} 
-                      onChange={e => setSearchQuery(e.target.value)} 
-                      placeholder="Search deals, brands, products..." 
-                      className="w-full px-3 py-2 rounded-xl bg-[#15171D] border border-white/10 text-xs text-white placeholder:text-zinc-500"
-                    />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {offers.filter(o => o.title.toLowerCase().includes(searchQuery.toLowerCase())).map(o => (
-                        <div key={o.id} onClick={() => setSelectedOffer(o)} className="rounded-2xl bg-[#15171D] border border-white/[0.08] p-3 cursor-pointer hover:border-[#FFC928]/40">
-                          <img src={o.imageUrl} className="w-full h-32 object-cover rounded-xl mb-2" />
-                          <span className="text-[10px] text-[#FFC928] font-bold">{o.discountPercent}% OFF • {o.partnerName}</span>
-                          <h4 className="font-bold text-xs text-white truncate mt-0.5">{o.title}</h4>
-                          <div className="flex items-baseline justify-between mt-2">
-                            <span className="font-extrabold text-sm text-white">₹{o.discountedPrice.toLocaleString()}</span>
-                            <span className="text-xs font-bold text-[#FFC928]">Earn {o.commissionRate}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB: MORE */}
-                {activeTab === 'more' && (
-                  <div className="space-y-3">
-                    <h2 className="font-display font-bold text-xl text-white">More Options</h2>
-                    <button onClick={() => setShowShareModal(true)} className="w-full p-3 rounded-2xl bg-[#15171D] border border-white/[0.08] flex items-center justify-between text-xs text-white font-bold">
-                      <span>Referral Link & Rewards</span>
-                      <Icons.Share2 />
-                    </button>
-                    <button onClick={() => setShowAdminLogin(true)} className="w-full p-3 rounded-2xl bg-[#15171D] border border-[#FFC928]/30 flex items-center justify-between text-xs text-[#FFC928] font-bold">
-                      <span>Administrator Login</span>
-                      <Icons.Shield />
-                    </button>
-                  </div>
-                )}
-
-                {/* TAB: ADMIN (12 Modules) */}
-                {activeTab === 'admin' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h2 className="font-display font-bold text-xl text-white">Admin Management</h2>
-                      <button onClick={() => setActiveTab('home')} className="text-xs text-[#FFC928] font-bold">Back to App</button>
-                    </div>
-
-                    {/* Partner Management (CRITICAL DYNAMIC URL CONTROL) */}
-                    <div className="p-4 rounded-2xl bg-[#15171D] border border-[#FFC928]/40 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-sm text-white">Partner Management (Dynamic URLs)</h3>
-                        <button 
-                          onClick={() => {
-                            const name = prompt('Partner Name (e.g. Croma):');
-                            const url = prompt('Exact Affiliate URL:');
-                            if (name && url) {
-                              setPartners(prev => [...prev, { id: 'p_' + Date.now(), name, affiliateUrl: url, commissionInfo: 'Up to 10%', logo: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=160', description: 'Partner network', clickCount: 0 }]);
-                            }
-                          }}
-                          className="px-2 py-1 rounded bg-[#FFC928] text-[#08090C] text-[10px] font-bold"
+                        <button
+                          onClick={() => openAffiliateLink(p.affiliateUrl, p.name, p.id)}
+                          className="mt-4 w-full py-2 rounded-xl bg-[#252833] hover:bg-[#FFC928] hover:text-[#08090C] text-xs font-bold text-zinc-200 transition-colors flex items-center justify-center gap-1.5"
                         >
-                          + Add Partner
+                          <span>Open Store</span>
+                          <Icons.ExternalLink />
                         </button>
                       </div>
+                    ))}
+                  </div>
+                </div>
 
-                      <div className="space-y-2">
-                        {partners.map(p => (
-                          <div key={p.id} className="p-2.5 rounded-xl bg-[#08090C] border border-white/[0.08] space-y-1 text-xs">
-                            <div className="flex justify-between font-bold text-white">
-                              <span>{p.name}</span>
-                              <span className="text-[#FFC928]">{p.clickCount} Clicks</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <input 
-                                type="text" 
-                                value={p.affiliateUrl} 
-                                onChange={e => {
-                                  const val = e.target.value;
-                                  setPartners(prev => prev.map(item => item.id === p.id ? { ...item, affiliateUrl: val } : item));
-                                }}
-                                className="flex-1 px-2 py-1 rounded bg-[#15171D] border border-white/10 text-[10px] font-mono text-[#FFC928]"
-                              />
-                              <button 
-                                onClick={() => {
-                                  setPartners(prev => prev.filter(item => item.id !== p.id));
-                                }}
-                                className="text-rose-400 p-1"
-                              >
-                                <Icons.Trash />
-                              </button>
-                            </div>
+                {/* Top Deals */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-display font-bold text-lg text-white">Trending Deals & Offers</h3>
+                    <button onClick={() => setActiveTab('offers')} className="text-xs text-[#FFC928] font-semibold hover:underline">View All</button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {offers.map(o => (
+                      <div key={o.id} onClick={() => setSelectedOffer(o)} className="p-3.5 rounded-2xl bg-[#15171D] border border-white/[0.08] flex items-center gap-3.5 cursor-pointer hover:border-[#FFC928]/40 shadow-sm">
+                        <img src={o.imageUrl} className="w-20 h-20 rounded-xl object-cover" />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-bold text-[#FFC928]">{o.discountPercent}% OFF • {o.partnerName}</span>
+                          <h4 className="font-bold text-xs text-white truncate mt-0.5">{o.title}</h4>
+                          <div className="flex items-baseline gap-2 mt-1">
+                            <span className="font-bold text-sm text-white">₹{o.discountedPrice.toLocaleString()}</span>
+                            <span className="text-[10px] text-zinc-400 line-through">₹{o.originalPrice.toLocaleString()}</span>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Pending Withdrawals Approval Desk */}
-                    <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
-                      <h3 className="font-bold text-sm text-white">Pending Withdrawals Desk</h3>
-                      {withdrawals.filter(w => w.status === 'pending').map(w => (
-                        <div key={w.id} className="p-3 rounded-xl bg-[#08090C] border border-white/[0.06] flex items-center justify-between text-xs">
-                          <div>
-                            <span className="font-bold text-white block">₹{w.amount.toLocaleString()}</span>
-                            <span className="text-[10px] text-zinc-400 font-mono">{w.details}</span>
-                          </div>
-                          <div className="flex gap-1.5">
-                            <button 
-                              onClick={() => {
-                                setWithdrawals(prev => prev.map(item => item.id === w.id ? { ...item, status: 'paid' } : item));
-                                setCurrentUser(prev => ({ ...prev, pendingBalance: Math.max(0, prev.pendingBalance - w.amount) }));
-                                alert('Withdrawal marked as PAID!');
-                              }}
-                              className="px-2.5 py-1 rounded bg-emerald-500 text-[#08090C] font-bold text-[10px]"
-                            >
-                              Approve & Pay
-                            </button>
-                          </div>
+                          <span className="text-[11px] text-[#FFC928] font-bold block mt-1">Earn {o.commissionRate}</span>
                         </div>
-                      ))}
-                      {withdrawals.filter(w => w.status === 'pending').length === 0 && (
-                        <p className="text-xs text-zinc-500">No pending requests.</p>
-                      )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: EARNINGS */}
+            {activeTab === 'earnings' && (
+              <div className="space-y-5">
+                <h2 className="font-display font-bold text-2xl text-white">Earnings & Commissions Ledger</h2>
+                <div className="p-6 rounded-2xl bg-gradient-to-br from-[#1C1F27] to-[#15171D] border border-[#FFC928]/30 max-w-xl">
+                  <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider">Total Lifetime Earnings</span>
+                  <div className="text-4xl font-extrabold text-[#FFC928] font-display mt-1">₹{currentUser.totalEarnings.toLocaleString()}</div>
+                  <div className="grid grid-cols-2 gap-4 mt-5 pt-4 border-t border-white/[0.08] text-xs">
+                    <div>
+                      <span className="text-zinc-400 text-xs block">Under Review (Pending)</span>
+                      <span className="font-bold text-base text-amber-400">₹{currentUser.pendingBalance.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-400 text-xs block">Available for Payout</span>
+                      <span className="font-bold text-base text-emerald-400">₹{currentUser.walletBalance.toLocaleString()}</span>
                     </div>
                   </div>
-                )}
-              </main>
+                </div>
 
-              {/* Fixed 5-Item Bottom Navigation Bar */}
-              <nav className="absolute bottom-0 left-0 right-0 h-16 bg-[#08090C]/95 backdrop-blur-md border-t border-white/[0.08] flex items-center justify-around px-2 z-40">
-                <button onClick={() => setActiveTab('home')} className={'flex flex-col items-center ' + (activeTab === 'home' ? 'text-[#FFC928]' : 'text-zinc-500')}>
-                  <Icons.Home />
-                  <span className="text-[9px] font-bold mt-1">Home</span>
-                </button>
-                <button onClick={() => setActiveTab('earnings')} className={'flex flex-col items-center ' + (activeTab === 'earnings' ? 'text-[#FFC928]' : 'text-zinc-500')}>
-                  <Icons.TrendingUp />
-                  <span className="text-[9px] font-bold mt-1">Earnings</span>
-                </button>
-                {/* Center Elevated Share Button */}
-                <div className="-mt-6">
-                  <button onClick={() => setShowShareModal(true)} className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#8C6207] via-[#FFC928] to-[#FFF2B2] p-[2px] shadow-lg shadow-[#FFC928]/40 flex items-center justify-center">
-                    <div className="w-full h-full rounded-full bg-[#15171D] flex items-center justify-center text-[#FFC928]">
-                      <Icons.Share2 />
+                <div className="space-y-3">
+                  <h3 className="font-bold text-sm text-white uppercase tracking-wider">Verified Transaction History</h3>
+                  <div className="p-4 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-white block">Samsung S24 Ultra Purchase</span>
+                      <span className="text-zinc-400">Amazon India Commission Verified</span>
                     </div>
+                    <span className="font-bold text-sm text-[#FFC928]">+₹5,084</span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-white block">Referral Bonus: Rohit Sharma</span>
+                      <span className="text-zinc-400">New user activation reward</span>
+                    </div>
+                    <span className="font-bold text-sm text-[#FFC928]">+₹250</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: WALLET */}
+            {activeTab === 'wallet' && (
+              <div className="space-y-5 max-w-2xl">
+                <h2 className="font-display font-bold text-2xl text-white">Affiliate Wallet & Payouts</h2>
+                <div className="p-5 rounded-2xl bg-[#15171D] border border-[#FFC928]/30">
+                  <span className="text-xs text-zinc-400 font-semibold uppercase">Available for Instant Payout</span>
+                  <div className="text-3xl font-extrabold text-[#FFC928] font-display mt-1">₹{currentUser.walletBalance.toLocaleString()}</div>
+                </div>
+
+                {/* Withdrawal Request Form */}
+                <div className="p-5 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                  <h3 className="font-bold text-base text-white">Request Payout</h3>
+                  <div>
+                    <label className="text-xs text-zinc-300 block mb-1">Amount (₹)</label>
+                    <input id="wdrAmount" type="number" defaultValue="2000" className="w-full px-3.5 py-2.5 rounded-xl bg-[#08090C] border border-white/10 text-white text-sm font-bold" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-zinc-300 block mb-1">UPI ID or Bank Details</label>
+                    <input id="wdrUpi" type="text" defaultValue="kasifbhai@okaxis" className="w-full px-3.5 py-2.5 rounded-xl bg-[#08090C] border border-white/10 text-white text-sm font-mono" />
+                  </div>
+                  <button 
+                    onClick={() => {
+                      const amt = Number(document.getElementById('wdrAmount').value);
+                      const upi = document.getElementById('wdrUpi').value;
+                      if (amt > currentUser.walletBalance) {
+                        alert('Insufficient available balance!');
+                        return;
+                      }
+                      setCurrentUser(prev => ({ ...prev, walletBalance: prev.walletBalance - amt, pendingBalance: prev.pendingBalance + amt }));
+                      setWithdrawals(prev => [{ id: 'w_' + Date.now(), amount: amt, method: 'UPI', details: upi, status: 'pending', date: 'Just now' }, ...prev]);
+                      confetti();
+                      alert('Withdrawal request submitted for admin review!');
+                    }}
+                    className="w-full py-3 rounded-xl bg-[#FFC928] text-[#08090C] text-sm font-bold hover:bg-[#D99B16]"
+                  >
+                    Submit Withdrawal Request
                   </button>
                 </div>
-                <button onClick={() => setActiveTab('wallet')} className={'flex flex-col items-center ' + (activeTab === 'wallet' ? 'text-[#FFC928]' : 'text-zinc-500')}>
-                  <Icons.Wallet />
-                  <span className="text-[9px] font-bold mt-1">Wallet</span>
-                </button>
-                <button onClick={() => setActiveTab('more')} className={'flex flex-col items-center ' + (activeTab === 'more' ? 'text-[#FFC928]' : 'text-zinc-500')}>
-                  <Icons.Menu />
-                  <span className="text-[9px] font-bold mt-1">More</span>
-                </button>
-              </nav>
 
+                {/* Withdrawal History */}
+                <div className="space-y-2.5">
+                  <h4 className="font-bold text-sm text-white">Withdrawal History</h4>
+                  {withdrawals.map(w => (
+                    <div key={w.id} className="p-3.5 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-bold text-white block text-sm">₹{w.amount.toLocaleString()} via {w.method}</span>
+                        <span className="text-zinc-400 font-mono text-xs">{w.details}</span>
+                      </div>
+                      <span className={'px-2.5 py-1 rounded text-xs font-bold uppercase ' + (w.status === 'paid' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400')}>
+                        {w.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: OFFERS */}
+            {activeTab === 'offers' && (
+              <div className="space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h2 className="font-display font-bold text-2xl text-white">All Deals & Product Offers</h2>
+                  <input 
+                    type="text" 
+                    value={searchQuery} 
+                    onChange={e => setSearchQuery(e.target.value)} 
+                    placeholder="Search deals, products, brands..." 
+                    className="w-full sm:w-72 px-3.5 py-2 rounded-xl bg-[#15171D] border border-white/10 text-xs text-white placeholder:text-zinc-500"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {offers.filter(o => o.title.toLowerCase().includes(searchQuery.toLowerCase())).map(o => (
+                    <div key={o.id} onClick={() => setSelectedOffer(o)} className="rounded-2xl bg-[#15171D] border border-white/[0.08] p-4 cursor-pointer hover:border-[#FFC928]/40 shadow-sm flex flex-col justify-between">
+                      <div>
+                        <img src={o.imageUrl} className="w-full h-40 object-cover rounded-xl mb-3" />
+                        <span className="text-xs text-[#FFC928] font-bold">{o.discountPercent}% OFF • {o.partnerName}</span>
+                        <h4 className="font-bold text-sm text-white truncate mt-1">{o.title}</h4>
+                      </div>
+                      <div className="flex items-baseline justify-between mt-3 pt-3 border-t border-white/[0.06]">
+                        <span className="font-extrabold text-base text-white">₹{o.discountedPrice.toLocaleString()}</span>
+                        <span className="text-xs font-bold text-[#FFC928]">Earn {o.commissionRate}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: MORE */}
+            {activeTab === 'more' && (
+              <div className="space-y-4 max-w-xl">
+                <h2 className="font-display font-bold text-2xl text-white">More Options & Settings</h2>
+                <button onClick={() => setShowShareModal(true)} className="w-full p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] flex items-center justify-between text-sm text-white font-bold">
+                  <span>Referral Link & Rewards</span>
+                  <Icons.Share2 />
+                </button>
+                <button onClick={() => setShowAdminLogin(true)} className="w-full p-4 rounded-2xl bg-[#15171D] border border-[#FFC928]/30 flex items-center justify-between text-sm text-[#FFC928] font-bold">
+                  <span>Administrator Login Gateway</span>
+                  <Icons.Shield />
+                </button>
+              </div>
+            )}
+
+            {/* TAB: ADMIN (12 Modules) */}
+            {activeTab === 'admin' && (
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-display font-bold text-2xl text-white">Administrator Control Panel</h2>
+                  <button onClick={() => setActiveTab('home')} className="px-3 py-1.5 rounded-lg bg-[#252833] text-xs text-[#FFC928] font-bold">Back to App</button>
+                </div>
+
+                {/* Partner Management (CRITICAL DYNAMIC URL CONTROL) */}
+                <div className="p-5 rounded-2xl bg-[#15171D] border border-[#FFC928]/40 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-base text-white">Partner Management (Dynamic Affiliate URLs)</h3>
+                      <p className="text-xs text-zinc-400">Editing any URL below immediately changes the link opened by users in the app!</p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        const name = prompt('Partner Name (e.g. Croma):');
+                        const url = prompt('Exact Affiliate URL:');
+                        if (name && url) {
+                          setPartners(prev => [...prev, { id: 'p_' + Date.now(), name, affiliateUrl: url, commissionInfo: 'Up to 10%', logo: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=160', description: 'Partner network', clickCount: 0 }]);
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-[#FFC928] text-[#08090C] text-xs font-bold"
+                    >
+                      + Add Partner
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {partners.map(p => (
+                      <div key={p.id} className="p-3.5 rounded-xl bg-[#08090C] border border-white/[0.08] space-y-2 text-xs">
+                        <div className="flex justify-between font-bold text-white">
+                          <span className="text-sm">{p.name}</span>
+                          <span className="text-[#FFC928]">{p.clickCount} Outbound Clicks</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="text" 
+                            value={p.affiliateUrl} 
+                            onChange={e => {
+                              const val = e.target.value;
+                              setPartners(prev => prev.map(item => item.id === p.id ? { ...item, affiliateUrl: val } : item));
+                            }}
+                            className="flex-1 px-2.5 py-1.5 rounded bg-[#15171D] border border-white/10 text-xs font-mono text-[#FFC928]"
+                          />
+                          <button 
+                            onClick={() => {
+                              setPartners(prev => prev.filter(item => item.id !== p.id));
+                            }}
+                            className="text-rose-400 p-1.5 hover:bg-rose-500/10 rounded"
+                          >
+                            <Icons.Trash />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pending Withdrawals Approval Desk */}
+                <div className="p-5 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                  <h3 className="font-bold text-base text-white">Pending Withdrawals Desk</h3>
+                  {withdrawals.filter(w => w.status === 'pending').map(w => (
+                    <div key={w.id} className="p-4 rounded-xl bg-[#08090C] border border-white/[0.06] flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-bold text-white block text-sm">₹{w.amount.toLocaleString()}</span>
+                        <span className="text-zinc-400 font-mono">{w.details}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => {
+                            setWithdrawals(prev => prev.map(item => item.id === w.id ? { ...item, status: 'paid' } : item));
+                            setCurrentUser(prev => ({ ...prev, pendingBalance: Math.max(0, prev.pendingBalance - w.amount) }));
+                            alert('Withdrawal marked as PAID!');
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-500 text-[#08090C] font-bold text-xs"
+                        >
+                          Approve & Pay
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {withdrawals.filter(w => w.status === 'pending').length === 0 && (
+                    <p className="text-xs text-zinc-500">No pending requests.</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </main>
+
+          {/* Fixed Bottom Navigation Bar */}
+          <nav className="fixed bottom-0 left-0 right-0 h-16 bg-[#08090C]/95 backdrop-blur-md border-t border-white/[0.08] flex items-center justify-around px-4 z-40 max-w-7xl mx-auto">
+            <button onClick={() => setActiveTab('home')} className={'flex flex-col items-center ' + (activeTab === 'home' ? 'text-[#FFC928]' : 'text-zinc-500')}>
+              <Icons.Home />
+              <span className="text-[10px] font-bold mt-1">Home</span>
+            </button>
+            <button onClick={() => setActiveTab('earnings')} className={'flex flex-col items-center ' + (activeTab === 'earnings' ? 'text-[#FFC928]' : 'text-zinc-500')}>
+              <Icons.TrendingUp />
+              <span className="text-[10px] font-bold mt-1">Earnings</span>
+            </button>
+            {/* Center Elevated Golden Button */}
+            <div className="-mt-6">
+              <button onClick={() => setShowShareModal(true)} className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#8C6207] via-[#FFC928] to-[#FFF2B2] p-[2px] shadow-lg shadow-[#FFC928]/40 flex items-center justify-center">
+                <div className="w-full h-full rounded-full bg-[#15171D] flex items-center justify-center text-[#FFC928]">
+                  <Icons.Share2 />
+                </div>
+              </button>
             </div>
-          </div>
+            <button onClick={() => setActiveTab('wallet')} className={'flex flex-col items-center ' + (activeTab === 'wallet' ? 'text-[#FFC928]' : 'text-zinc-500')}>
+              <Icons.Wallet />
+              <span className="text-[10px] font-bold mt-1">Wallet</span>
+            </button>
+            <button onClick={() => setActiveTab('more')} className={'flex flex-col items-center ' + (activeTab === 'more' ? 'text-[#FFC928]' : 'text-zinc-500')}>
+              <Icons.Menu />
+              <span className="text-[10px] font-bold mt-1">More</span>
+            </button>
+          </nav>
 
           {/* Android Custom Tabs Simulator Modal */}
           {customTab.open && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-              <div className="w-full max-w-md bg-[#121419] rounded-2xl border border-white/10 overflow-hidden shadow-2xl p-4 text-center space-y-4">
+              <div className="w-full max-w-md bg-[#121419] rounded-2xl border border-white/10 overflow-hidden shadow-2xl p-5 text-center space-y-4">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2 text-xs">
                   <span className="font-bold text-white flex items-center gap-1"><Icons.Lock /> {customTab.title}</span>
                   <button onClick={() => setCustomTab({ open: false, url: '', title: '' })} className="text-zinc-400 hover:text-white"><Icons.X /></button>
@@ -735,7 +706,7 @@
                   <span className="text-[10px] text-zinc-400 uppercase font-semibold">Exact Admin Affiliate URL:</span>
                   <p className="text-xs font-mono text-[#FFC928] break-all mt-1">{customTab.url}</p>
                 </div>
-                <button onClick={() => window.open(customTab.url, '_blank')} className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs">
+                <button onClick={() => window.open(customTab.url, '_blank')} className="w-full py-3 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs">
                   Continue to Merchant Website
                 </button>
               </div>
@@ -751,7 +722,7 @@
                   <button onClick={() => setShowAdminLogin(false)} className="text-zinc-400"><Icons.X /></button>
                 </div>
                 <p className="text-xs text-zinc-400">Triple tap detected. Enter password to unlock admin console.</p>
-                <input id="adminPass" type="password" defaultValue="Admin@2026" className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs" />
+                <input id="adminPass" type="password" defaultValue="Admin@2026" className="w-full px-3 py-2.5 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs" />
                 <button 
                   onClick={() => {
                     setIsAdmin(true);
