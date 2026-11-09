@@ -1,154 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AffiliatePro Dashboard</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <style>
-    :root {
-      --bg-dark: #070709;
-      --card-bg: #121216;
-      --card-bg-grad: linear-gradient(145deg, #18171c 0%, #0e0e12 100%);
-      --gold-primary: #f5b921;
-      --gold-light: #ffd65a;
-      --gold-dark: #c48b0c;
-      --gold-grad: linear-gradient(135deg, #ffe074 0%, #f5b921 50%, #c88a08 100%);
-      --text-white: #ffffff;
-      --text-muted: #8e8e99;
-      --border-subtle: rgba(245, 185, 33, 0.22);
-      --border-glow: rgba(245, 185, 33, 0.55);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AffiliatePro</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:#070709;color:#fff;display:flex;justify-content:center;min-height:100vh}
+.app{width:100%;max-width:420px;background:#070709;min-height:100vh;padding:16px 14px 95px;position:relative}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px}
+.crown{width:40px;height:40px;border-radius:50%;background:rgba(245,185,33,0.15);display:flex;align-items:center;justify-content:center;font-size:22px;color:#f5b921;box-shadow:0 0 12px rgba(245,185,33,0.3)}
+.brand h1{font-size:19px;font-weight:700;line-height:1.1}.brand h1 span{color:#f5b921}
+.brand p{font-size:10px;color:#8e8e99;margin-top:2px}
+.h-right{display:flex;align-items:center;gap:12px}
+.wallet-pill{display:flex;align-items:center;gap:8px;background:#141419;border:1px solid rgba(245,185,33,0.3);padding:5px 10px;border-radius:12px}
+.wallet-pill i{color:#f5b921;font-size:17px}
+.w-txt{display:flex;flex-direction:column;line-height:1.1}
+.w-txt b{font-size:12px}.w-txt small{font-size:9.5px;color:#8e8e99}
+.bell{position:relative;color:#c7c7d1;font-size:19px}
+.bell::after{content:"";position:absolute;top:0;right:-1px;width:7px;height:7px;background:#ff3b30;border-radius:50%}
+.user-ic{width:33px;height:33px;border-radius:50%;background:rgba(245,185,33,0.15);border:1.5px solid #f5b921;display:flex;align-items:center;justify-content:center;color:#ffd65a;font-size:15px}
+.stats{background:linear-gradient(160deg,rgba(245,185,33,0.14),#121216 45%);border:1px solid rgba(245,185,33,0.25);border-radius:16px;padding:14px 4px;display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:16px}
+.stat{text-align:center;border-right:1px solid rgba(255,255,255,0.08)}.stat:last-child{border:none}
+.stat i{color:#f5b921;font-size:17px;margin-bottom:4px}
+.stat b{display:block;font-size:14.5px}.stat span{font-size:10px;color:#8e8e99}
+.actions{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.ac-card{background:linear-gradient(145deg,#18171c,#0e0e12);border:1px solid rgba(245,185,33,0.2);border-radius:15px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between}
+.ac-left{display:flex;align-items:center;gap:13px}
+.ac-ic{width:42px;height:42px;border-radius:50%;background:rgba(245,185,33,0.12);border:1.5px solid #f5b921;display:flex;align-items:center;justify-content:center;color:#f5b921;font-size:17px}
+.ac-txt h3{font-size:14px;font-weight:600}.ac-txt p{font-size:11px;color:#8e8e99}
+.ac-card>i{color:#f5b921;font-size:13px}
+.tabs{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.tab{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#c5c5d0;padding:8px 15px;border-radius:25px}
+.tab.active{background:linear-gradient(135deg,#ffe074,#f5b921,#c88a08);color:#000;font-weight:600;box-shadow:0 0 15px rgba(245,185,33,0.45)}
+.banner{position:relative;border-radius:18px;border:1.5px solid #f5b921;background:radial-gradient(circle at 75% 45%,rgba(245,185,33,0.28),#14120d 55%,#09090b);padding:20px 16px 26px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 0 20px rgba(245,185,33,0.2)}
+.b-txt{max-width:60%;transform:rotate(-2deg)}
+.b-txt h4{font-size:15px;color:#ffd65a;font-weight:600}
+.b-txt h2{font-size:18px;line-height:1.25;margin:3px 0 14px}.b-txt h2 span{color:#f5b921;border-bottom:2.5px solid #f5b921}
+.btn{background:linear-gradient(135deg,#ffe074,#f5b921);color:#000;font-size:12px;font-weight:700;padding:8px 15px;border-radius:20px;border:none;display:inline-flex;align-items:center;gap:6px}
+.bag-box{width:38%;text-align:center}
+.bag-icon{font-size:74px;color:#f5b921;filter:drop-shadow(0 4px 12px rgba(245,185,33,0.4))}
+.featured{background:#121216;border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:14px 12px}
+.f-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:14.5px;font-weight:600}
+.f-head i,.f-head a{color:#f5b921;text-decoration:none;font-size:12.5px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.card{background:#18181f;border:1px solid rgba(255,255,255,0.07);border-radius:13px;padding:10px 4px;text-align:center}
+.logo{width:38px;height:38px;margin:0 auto 6px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px}
+.card p{font-size:11.5px;color:#e4e4ec}.card span{font-size:10.5px;color:#f5b921;font-weight:600}
+.nav{position:fixed;bottom:0;width:100%;max-width:420px;background:#111116;border-top:1px solid rgba(245,185,33,0.25);display:flex;justify-content:space-around;align-items:center;padding:8px 4px 10px;z-index:9}
+.n-item{display:flex;flex-direction:column;align-items:center;color:#8e8e99;text-decoration:none;font-size:10.5px;gap:4px}
+.n-item.active{color:#f5b921}
+.n-item i{font-size:18px}
+.fab-wrap{display:flex;flex-direction:column;align-items:center;margin-top:-28px}
+.fab{width:50px;height:50px;border-radius:50%;background:#17150d;border:2px solid #f5b921;display:flex;align-items:center;justify-content:center;color:#f5b921;font-size:20px;box-shadow:0 0 15px rgba(245,185,33,0.5);margin-bottom:3px}
+.fab-wrap span{font-size:10.5px;color:#8e8e99}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="brand">
+      <div class="crown"><i class="fa-solid fa-crown"></i></div>
+      <div><h1>Affiliate<span>Pro</span></h1><p>Earn More • Grow Faster</p></div>
+    </div>
+    <div class="h-right">
+      <div class="wallet-pill"><i class="fa-solid fa-wallet"></i><div class="w-txt"><b>₹0.00</b><small>Wallet</small></div></div>
+      <div class="bell"><i class="fa-regular fa-bell"></i></div>
+      <div class="user-ic"><i class="fa-solid fa-user"></i></div>
+    </div>
+  </div>
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Poppins', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
+  <div class="stats">
+    <div class="stat"><i class="fa-solid fa-chart-line"></i><b>0</b><span>Total Clicks</span></div>
+    <div class="stat"><i class="fa-solid fa-user-group"></i><b>0</b><span>Total Referrals</span></div>
+    <div class="stat"><i class="fa-solid fa-indian-rupee-sign"></i><b>₹0</b><span>Total Earnings</span></div>
+    <div class="stat"><i class="fa-solid fa-trophy"></i><b>0</b><span>This Month</span></div>
+  </div>
 
-    body {
-      background-color: #000;
-      color: var(--text-white);
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-    }
+  <div class="actions">
+    <div class="ac-card"><div class="ac-left"><div class="ac-ic"><i class="fa-regular fa-handshake"></i></div><div class="ac-txt"><h3>Join Affiliate Program</h3><p>Start your journey to earn money</p></div></div><i class="fa-solid fa-chevron-right"></i></div>
+    <div class="ac-card"><div class="ac-left"><div class="ac-ic"><i class="fa-solid fa-link"></i></div><div class="ac-txt"><h3>Share Your Link</h3><p>Share and earn commission</p></div></div><i class="fa-solid fa-chevron-right"></i></div>
+    <div class="ac-card"><div class="ac-left"><div class="ac-ic"><i class="fa-solid fa-gift"></i></div><div class="ac-txt"><h3>Get Rewards</h3><p>Complete tasks & win rewards</p></div></div><i class="fa-solid fa-chevron-right"></i></div>
+  </div>
 
-    /* Mobile App Container */
-    .app-container {
-      width: 100%;
-      max-width: 420px;
-      background-color: var(--bg-dark);
-      min-height: 100vh;
-      padding: 16px 14px 95px;
-      position: relative;
-      overflow-x: hidden;
-      box-shadow: 0 0 40px rgba(245, 185, 33, 0.08);
-    }
+  <div class="tabs">
+    <div class="tab active"><i class="fa-solid fa-star"></i> Top Offers</div>
+    <div class="tab"><i class="fa-solid fa-fire" style="color:#ff6b2b"></i> Trending</div>
+    <div class="tab"><i class="fa-solid fa-tag"></i> Best Deals</div>
+  </div>
 
-    /* 1. Header */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 18px;
-    }
+  <div class="banner">
+    <div class="b-txt">
+      <h4>Join Affiliate Program</h4>
+      <h2>Share Links &<br>Earn <span>Real Money</span></h2>
+      <button class="btn">Start Earning <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+    <div class="bag-box"><i class="fa-solid fa-sack-dollar bag-icon"></i></div>
+  </div>
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+  <div class="featured">
+    <div class="f-head">
+      <div><i class="fa-solid fa-gift"></i> Featured Offers</div>
+      <a href="#">View All <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="logo" style="color:#fff"><i class="fa-brands fa-amazon"></i></div><p>Amazon</p><span>Up to 7%</span></div>
+      <div class="card"><div class="logo" style="background:#f8e026;color:#027cd5;font-style:italic">f</div><p>Flipkart</p><span>Up to 8%</span></div>
+      <div class="card"><div class="logo" style="color:#ff3f6c">M</div><p>Myntra</p><span>Up to 12%</span></div>
+      <div class="card"><div class="logo" style="background:#fff;color:#111;border-radius:50%;font-size:18px">A</div><p>Ajio</p><span>Up to 10%</span></div>
+    </div>
+  </div>
+</div>
 
-    .crown-logo {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(245,185,33,0.2) 0%, rgba(0,0,0,0) 70%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: var(--gold-primary);
-      filter: drop-shadow(0 2px 6px rgba(245, 185, 33, 0.4));
-    }
-
-    .brand-text h1 {
-      font-size: 20px;
-      font-weight: 700;
-      line-height: 1.1;
-      letter-spacing: 0.2px;
-    }
-
-    .brand-text h1 span {
-      color: var(--gold-primary);
-    }
-
-    .brand-text p {
-      font-size: 10.5px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .wallet-pill {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--card-bg-grad);
-      border: 1px solid var(--border-subtle);
-      padding: 5px 11px;
-      border-radius: 12px;
-    }
-
-    .wallet-pill i {
-      color: var(--gold-primary);
-      font-size: 18px;
-    }
-
-    .wallet-info {
-      display: flex;
-      flex-direction: column;
-      line-height: 1.15;
-    }
-
-    .wallet-info .amount {
-      font-size: 12.5px;
-      font-weight: 600;
-    }
-
-    .wallet-info .label {
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-
-    .notify-btn {
-      position: relative;
-      color: #c7c7d1;
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    .notify-btn .dot {
-      position: absolute;
-      top: 0px;
-      right: -1px;
-      width: 7px;
-      height: 7px;
-      background: #ff3b30;
-      border-radius: 50%;
-    }
-
-    .profile-btn {
-      width: 34px;
-      height: 3
+<nav class="nav">
+  <a href="#" class="n-item active"><i class="fa-solid fa-house"></i><span>Home</span></a>
+  <a href="#" class="n-item"><i class="fa-solid fa-chart-column"></i><span>Earnings</span></a>
+  <div class="fab-wrap"><div class="fab"><i class="fa-solid fa-share-nodes"></i></div><span>Share</span></div>
+  <a href="#" class="n-item"><i class="fa-solid fa-wallet"></i><span>Wallet</span></a>
+  <a href="#" class="n-item"><i class="fa-solid fa-border-all"></i><span>More</span></a>
+</nav>
+</body>
+</html>
