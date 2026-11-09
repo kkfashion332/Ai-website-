@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>AffiliatePro - Android Affiliate Marketing Platform</title>
-  <meta name="description" content="Premium black & gold fintech affiliate marketing application featuring dynamic affiliate URLs, EarnKaro Auto-Fetch, click tracking, wallet & withdrawals." />
+  <title>AffiliatePro - Complete Android Affiliate Marketing Platform</title>
+  <meta name="description" content="Production-ready black & gold fintech affiliate marketing application featuring dynamic affiliate URLs, click tracking, wallet & withdrawals, referral rewards, and 12-module administrator console." />
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -14,12 +14,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   
-  <!-- React 18 & ReactDOM & Babel CDN -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- React 18 & ReactDOM & Babel CDN (Global High-Speed CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.4/babel.min.js" crossorigin="anonymous"></script>
   <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <script>
+    window.addEventListener('error', function(e) {
+      console.error('AffiliatePro Runtime Error:', e.message);
+      var errEl = document.getElementById('error-banner');
+      if (errEl) {
+        errEl.textContent = 'Script Error: ' + e.message;
+        errEl.classList.remove('hidden');
+      }
+    });
+  </script>
 
   <script>
     tailwind.config = {
@@ -50,7 +61,7 @@
       color: #F3F4F6;
       -webkit-font-smoothing: antialiased;
     }
-    h1, h2, h3, .font-heading {
+    h1, h2, h3, h4, .font-heading {
       font-family: 'Outfit', sans-serif;
     }
     .gold-gradient-bg {
@@ -76,265 +87,93 @@
   </style>
 </head>
 <body class="bg-[#08090C] text-[#F3F4F6] selection:bg-[#FFC928]/30 selection:text-[#FFC928]">
+  <div id="error-banner" class="hidden fixed top-2 left-2 right-2 z-50 bg-rose-600 text-white p-3 rounded-xl text-xs font-mono shadow-2xl"></div>
   <div id="root"></div>
 
   <!-- Standalone Application React Code -->
   <script type="text/babel">
-    const { useState, useEffect } = React;
-
-    // Safe LocalStorage Reader (Prevents Black Screen if storage corrupts)
-    const getSavedData = (key, fallback) => {
-      try {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : fallback;
-      } catch (e) {
-        return fallback;
+    const { useState, useEffect, useCallback, useMemo } = React;
+    const triggerConfetti = () => {
+      if (typeof confetti === 'function') {
+        try { confetti(); } catch (e) {}
       }
     };
 
-    // SVG Icons (Added ShoppingBag & Refresh to fix Black Screen crash)
+    // Complete Self-Closing SVG Icons
     const Icons = {
-      Home: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>,
-      TrendingUp: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>,
-      Share2: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>,
-      Wallet: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>,
-      Menu: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>,
-      ShoppingBag: () => <svg className="w-4 h-4 text-[#FFC928]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>,
-      Refresh: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>,
-      Bell: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>,
-      Shield: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>,
-      ExternalLink: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>,
-      Copy: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>,
-      Check: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>,
-      Search: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>,
-      X: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>,
-      Lock: () => <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>,
-      Sparkles: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>,
-      Plus: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>,
-      Trash: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>,
+      Home: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>,
+      TrendingUp: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
+      Share2: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>,
+      Wallet: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>,
+      ShoppingBag: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>,
+      Menu: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>,
+      Bell: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>,
+      Shield: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
+      ExternalLink: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>,
+      Copy: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>,
+      Check: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>,
+      Search: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>,
+      X: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>,
+      Lock: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>,
+      Sparkles: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>,
+      Plus: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>,
+      Trash: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
+      Users: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>,
+      Tag: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>,
+      Image: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+      Gift: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v13m0-13V4a2 2 0 10-4 0v4m4 0V4a2 2 0 114 0v4m-8 0h8m-10 0H4a2 2 0 00-2 2v2a2 2 0 002 2h16a2 2 0 002-2v-2a2 2 0 00-2-2h-2" /></svg>,
+      Layout: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" /></svg>,
+      Settings: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+      BarChart: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+      Refresh: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+      ArrowLeft: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>,
+      Edit: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
     };
 
-    // Smart EarnKaro / fktr.in / Flipkart / Amazon Link Decoder & Scraper Engine
-    async function fetchProductFromAffiliateLink(rawUrl) {
-      let targetUrl = rawUrl.trim();
-      let resolvedUrl = targetUrl;
-      let title = '';
-      let imageUrl = '';
-      let price = 0;
-      let mrp = 0;
-      let partnerName = 'Flipkart';
-
-      // Helper to extract embedded URL if EarnKaro redirects to ?url=https%3A%2F%2Fwww.flipkart.com...
-      const extractEmbeddedUrl = (str) => {
-        try {
-          const decoded = decodeURIComponent(decodeURIComponent(str));
-          const fkMatch = decoded.match(/https?:\/\/(?:www\.|dl\.)?flipkart\.com\/[^\s"'<>\\&]+/i);
-          if (fkMatch) return fkMatch[0];
-          const amzMatch = decoded.match(/https?:\/\/(?:www\.)?amazon\.in\/[^\s"'<>\\&]+/i);
-          if (amzMatch) return amzMatch[0];
-          const mynMatch = decoded.match(/https?:\/\/(?:www\.)?myntra\.com\/[^\s"'<>\\&]+/i);
-          if (mynMatch) return mynMatch[0];
-        } catch (e) {}
-        return null;
-      };
-
-      // Step 1: Try Microlink API first (Follows redirects + extracts metadata cleanly)
-      try {
-        const mlRes = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(targetUrl)}`);
-        const mlJson = await mlRes.json();
-        if (mlJson && mlJson.status === 'success' && mlJson.data) {
-          const d = mlJson.data;
-          if (d.url) {
-            const embedded = extractEmbeddedUrl(d.url);
-            resolvedUrl = embedded || d.url;
-          }
-          if (d.title && !d.title.toLowerCase().includes('just a moment') && !d.title.toLowerCase().includes('ekaro')) {
-            title = d.title.replace(/Buy\s+/i, '').replace(/Online at Best Prices.*/i, '').trim();
-          }
-          if (d.image && d.image.url && !d.image.url.includes('ekaro')) {
-            imageUrl = d.image.url;
-          }
-          // Try extracting price from description or title if present
-          const textToScan = `${d.title || ''} ${d.description || ''}`;
-          const priceMatch = textToScan.match(/(?:₹|Rs\.?|INR)\s*([0-9,]{2,9})/i);
-          if (priceMatch) {
-            price = parseInt(priceMatch[1].replace(/,/g, ''), 10);
-          }
-        }
-      } catch (err) {
-        console.warn('Microlink layer warning:', err);
-      }
-
-      // Step 2: Deep HTML Scrape via CORS Proxy to resolve fktr.in & get exact Live Price + JSON-LD
-      const proxies = [
-        (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
-        (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`
-      ];
-
-      for (const makeProxy of proxies) {
-        if (title && imageUrl && price > 0) break;
-        try {
-          const res = await fetch(makeProxy(resolvedUrl));
-          const data = await res.json().catch(async () => ({ contents: await res.text() }));
-          const html = data.contents || '';
-          const finalUrlFromProxy = (data.status && data.status.url) ? data.status.url : resolvedUrl;
-
-          // Check if HTML or URL contains embedded Flipkart/Amazon destination URL
-          const embedded = extractEmbeddedUrl(finalUrlFromProxy) || extractEmbeddedUrl(html);
-          if (embedded && embedded !== resolvedUrl) {
-            resolvedUrl = embedded;
-            // Fetch the actual Flipkart/Amazon product page HTML
-            const res2 = await fetch(makeProxy(resolvedUrl));
-            const data2 = await res2.json().catch(async () => ({ contents: await res2.text() }));
-            if (data2.contents) {
-              parseProductHtml(data2.contents);
-            }
-          } else if (html) {
-            parseProductHtml(html);
-          }
-        } catch (e) {
-          console.warn('Proxy attempt failed:', e);
-        }
-      }
-
-      function parseProductHtml(htmlString) {
-        const doc = new DOMParser().parseFromString(htmlString, 'text/html');
-
-        // 1. Check JSON-LD (Flipkart & Amazon standard structured data)
-        const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
-        scripts.forEach(s => {
-          try {
-            let json = JSON.parse(s.textContent);
-            if (Array.isArray(json)) json = json[0];
-            if (json && (json['@type'] === 'Product' || json.name)) {
-              if (!title && json.name) title = json.name;
-              if (!imageUrl && json.image) {
-                imageUrl = Array.isArray(json.image) ? json.image[0] : json.image;
-              }
-              const offerPrice = json.offers?.price || json.offers?.[0]?.price;
-              if (!price && offerPrice) price = parseInt(String(offerPrice).replace(/[^0-9]/g, ''), 10);
-            }
-          } catch (e) {}
-        });
-
-        // 2. Check OpenGraph Meta Tags
-        if (!title) {
-          const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || doc.title;
-          if (ogTitle && !ogTitle.includes('Online Shopping')) {
-            title = ogTitle.replace(/Buy\s+/i, '').replace(/Online at Best.*/i, '').trim();
-          }
-        }
-        if (!imageUrl) {
-          const ogImg = doc.querySelector('meta[property="og:image"]')?.getAttribute('content');
-          if (ogImg) imageUrl = ogImg;
-        }
-
-        // 3. Check Flipkart / Amazon specific Price DOM classes
-        if (!price) {
-          const priceEl = doc.querySelector('.Nx9bqj, ._30jeq3, ._16Jk6d, .a-price-whole');
-          if (priceEl) {
-            const pVal = parseInt(priceEl.textContent.replace(/[^0-9]/g, ''), 10);
-            if (pVal > 0) price = pVal;
-          }
-        }
-        if (!mrp) {
-          const mrpEl = doc.querySelector('.yRaY8j, ._3I9_wc, ._2p6lqe');
-          if (mrpEl) {
-            const mVal = parseInt(mrpEl.textContent.replace(/[^0-9]/g, ''), 10);
-            if (mVal > 0) mrp = mVal;
-          }
-        }
-
-        // 4. Regex fallback for ₹ price in raw HTML
-        if (!price) {
-          const regexPrice = htmlString.match(/"price"\s*:\s*"?([0-9]{2,7})"?/i) || htmlString.match(/₹\s*([0-9,]{2,8})/);
-          if (regexPrice) {
-            price = parseInt(regexPrice[1].replace(/,/g, ''), 10);
-          }
-        }
-      }
-
-      // Step 3: Clean up & Smart Fallbacks from URL slug if Flipkart bot-check blocked full HTML
-      const lowerUrl = (resolvedUrl + ' ' + rawUrl).toLowerCase();
-      if (lowerUrl.includes('amazon') || lowerUrl.includes('amzn')) partnerName = 'Amazon';
-      else if (lowerUrl.includes('myntra')) partnerName = 'Myntra';
-      else if (lowerUrl.includes('ajio')) partnerName = 'Ajio';
-      else if (lowerUrl.includes('meesho')) partnerName = 'Meesho';
-      else partnerName = 'Flipkart';
-
-      // Extract readable product name from Flipkart/Amazon URL slug if title is still empty
-      if (!title && resolvedUrl.includes('/p/')) {
-        try {
-          const slug = resolvedUrl.split('flipkart.com/')[1]?.split('/p/')[0];
-          if (slug) {
-            title = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-          }
-        } catch (e) {}
-      }
-
-      if (!mrp && price > 0) {
-        mrp = Math.round(price * 1.25); // Estimate 20% off if MRP wasn't listed separately
-      }
-
-      return {
-        title: title || '',
-        imageUrl: imageUrl || '',
-        discountedPrice: price || '',
-        originalPrice: mrp || '',
-        partnerName,
-        resolvedUrl,
-        affiliateUrl: rawUrl.trim() // Always preserve the user's EarnKaro link!
-      };
-    }
-
-    // Initial Data
+    // Initial Database Data
     const INITIAL_PARTNERS = [
       {
         id: 'partner_amazon',
-        name: 'Amazon',
+        name: 'Amazon India',
         slug: 'amazon',
-        logo: 'https://upload.wikimedia.org/wikipedia/commons/d/de/Amazon_icon.png',
-        description: 'India\'s largest online store for electronics, mobiles, fashion, home essentials & more.',
-        commissionInfo: 'Up to 7%',
+        logo: 'https://images.unsplash.com/photo-1523474253246-64e03d526c61?w=160&auto=format&fit=crop&q=80',
+        description: 'India largest online store for electronics, mobiles, fashion & daily essentials.',
+        commissionInfo: 'Up to 7.0% Commission',
         affiliateUrl: 'https://www.amazon.in/?tag=affiliatepro21-21&ascsubtag=AFFPRO_PORTAL',
         status: 'active',
-        displayOrder: 1,
         clickCount: 1420
       },
       {
         id: 'partner_flipkart',
         name: 'Flipkart',
         slug: 'flipkart',
-        logo: 'https://seeklogo.com/images/F/flipkart-logo-3F33927DAA-seeklogo.com.png',
+        logo: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=160&auto=format&fit=crop&q=80',
         description: 'Electronics, fashion, appliances, smart gadgets and big festive discounts.',
-        commissionInfo: 'Up to 8%',
+        commissionInfo: 'Up to 8.0% Commission',
         affiliateUrl: 'https://www.flipkart.com/?affid=affiliatepro&affExtParam1=AFFPRO_TRACK',
         status: 'active',
-        displayOrder: 2,
         clickCount: 980
       },
       {
         id: 'partner_myntra',
         name: 'Myntra',
         slug: 'myntra',
-        logo: 'https://cdn.iconscout.com/icon/free/png-256/free-myntra-logo-icon-download-in-svg-png-gif-file-formats--shopping-brand-social-media-pack-logos-icons-4291316.png',
+        logo: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=160&auto=format&fit=crop&q=80',
         description: 'Premier fashion destination for top lifestyle brands, sportswear & apparel.',
-        commissionInfo: 'Up to 12%',
+        commissionInfo: 'Up to 12.0% Commission',
         affiliateUrl: 'https://www.myntra.com/?utm_source=affiliate&utm_medium=affiliatepro',
         status: 'active',
-        displayOrder: 3,
         clickCount: 760
       },
       {
         id: 'partner_ajio',
-        name: 'Ajio',
+        name: 'Ajio Luxe & Trends',
         slug: 'ajio',
         logo: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=160&auto=format&fit=crop&q=80',
         description: 'Trendy clothing, indie collections, international luxury brands and footwear.',
-        commissionInfo: 'Up to 10%',
+        commissionInfo: 'Up to 10.0% Commission',
         affiliateUrl: 'https://www.ajio.com/?utm_source=affiliatepro_media&utm_campaign=pro_gold',
         status: 'active',
-        displayOrder: 4,
         clickCount: 540
       },
       {
@@ -343,10 +182,9 @@
         slug: 'meesho',
         logo: 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=160&auto=format&fit=crop&q=80',
         description: 'Wholesale prices for ethnic wear, kitchenware, accessories & everyday items.',
-        commissionInfo: 'Up to 18%',
+        commissionInfo: 'Up to 18.0% Commission',
         affiliateUrl: 'https://www.meesho.com/?referrer=affiliatepro_partner_in',
         status: 'active',
-        displayOrder: 5,
         clickCount: 420
       }
     ];
@@ -358,7 +196,7 @@
         description: 'Galaxy AI with Snapdragon 8 Gen 3, 200MP Quad Camera, Dynamic AMOLED 2X.',
         imageUrl: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&auto=format&fit=crop&q=80',
         partnerId: 'partner_amazon',
-        partnerName: 'Amazon',
+        partnerName: 'Amazon India',
         originalPrice: 139999,
         discountedPrice: 112999,
         discountPercent: 19,
@@ -405,179 +243,176 @@
       }
     ];
 
-    const INITIAL_USER = {
-      id: 'user_kasif',
-      name: 'Kasif Bhai',
-      email: 'kasifbhaityu568@gmail.com',
-      phoneNumber: '+91 98765 43210',
-      role: 'admin',
-      referralCode: 'GOLD-KASIF-782',
-      walletBalance: 12450,
-      pendingBalance: 3200,
-      totalEarnings: 28650,
-      totalClicks: 284,
-      totalReferrals: 14
+    const INITIAL_BANNERS = [
+      {
+        id: 'b1',
+        title: 'Festive Electronics Super Sale',
+        subtitle: 'Flat 45% Off + Extra 8% Golden Affiliate Cash Reward',
+        imageUrl: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&auto=format&fit=crop&q=80',
+        affiliateUrl: 'https://www.amazon.in/?tag=affiliatepro21-21',
+        status: 'active'
+      },
+      {
+        id: 'b2',
+        title: 'Fashion Grand Clearance Fest',
+        subtitle: 'Up to 70% Off on Top Global Brands + 12% Payout',
+        imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&auto=format&fit=crop&q=80',
+        affiliateUrl: 'https://www.myntra.com/?utm_source=affiliate&utm_medium=affiliatepro',
+        status: 'active'
+      }
+    ];
+
+    const INITIAL_USERS = [
+      {
+        id: 'user_kasif',
+        name: 'Kasif Bhai',
+        email: 'kasifbhaityu568@gmail.com',
+        phoneNumber: '+91 98765 43210',
+        role: 'admin',
+        referralCode: 'GOLD-KASIF-782',
+        walletBalance: 12450,
+        pendingBalance: 3200,
+        totalEarnings: 28650,
+        totalClicks: 284,
+        totalReferrals: 14,
+        status: 'active'
+      },
+      {
+        id: 'user_rohit',
+        name: 'Rohit Sharma',
+        email: 'rohit.s@gmail.com',
+        phoneNumber: '+91 98111 22334',
+        role: 'user',
+        referralCode: 'ROHIT-PRO-91',
+        walletBalance: 3450,
+        pendingBalance: 1200,
+        totalEarnings: 8200,
+        totalClicks: 88,
+        totalReferrals: 5,
+        status: 'active'
+      },
+      {
+        id: 'user_priya',
+        name: 'Priya Patel',
+        email: 'priya.p@outlook.com',
+        phoneNumber: '+91 97234 56789',
+        role: 'user',
+        referralCode: 'PRIYA-SAVE-12',
+        walletBalance: 1800,
+        pendingBalance: 400,
+        totalEarnings: 4500,
+        totalClicks: 42,
+        totalReferrals: 2,
+        status: 'active'
+      }
+    ];
+
+    const INITIAL_SETTINGS = {
+      appName: 'AffiliatePro',
+      tagline: 'Earn More • Grow Faster',
+      currency: '₹',
+      supportEmail: 'support@affiliatepro.in',
+      supportPhone: '+91 98765 43210',
+      referralBonus: 250,
+      welcomeBonus: 100,
+      minWithdrawal: 500,
+      maintenanceMode: false,
+      showBanner: true,
+      showCategoryPills: true,
+      showFeaturedOffers: true,
+      showAllProducts: true
     };
 
     function App() {
-      // Core state
-      const [partners, setPartners] = useState(() => getSavedData('ap_partners', INITIAL_PARTNERS));
-      const [offers, setOffers] = useState(() => getSavedData('ap_offers', INITIAL_OFFERS));
-      const [currentUser, setCurrentUser] = useState(() => getSavedData('ap_user', INITIAL_USER));
-      const [withdrawals, setWithdrawals] = useState(() => getSavedData('ap_withdrawals', [
-        { id: 'w1', amount: 5000, method: 'UPI', details: 'kasifbhai@okaxis', status: 'paid', date: '2026-10-20' },
-        { id: 'w2', amount: 4500, method: 'UPI', details: 'kasifbhai@okaxis', status: 'pending', date: '2026-11-08' }
-      ]));
-      const [activeTab, setActiveTab] = useState('home');
+      // Core State from LocalStorage
+      const [partners, setPartners] = useState(() => JSON.parse(localStorage.getItem('ap_partners')) || INITIAL_PARTNERS);
+      const [offers, setOffers] = useState(() => JSON.parse(localStorage.getItem('ap_offers')) || INITIAL_OFFERS);
+      const [banners, setBanners] = useState(() => JSON.parse(localStorage.getItem('ap_banners')) || INITIAL_BANNERS);
+      const [users, setUsers] = useState(() => JSON.parse(localStorage.getItem('ap_users')) || INITIAL_USERS);
+      const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('ap_user')) || INITIAL_USERS[0]);
+      const [settings, setSettings] = useState(() => JSON.parse(localStorage.getItem('ap_settings')) || INITIAL_SETTINGS);
+      const [withdrawals, setWithdrawals] = useState(() => JSON.parse(localStorage.getItem('ap_withdrawals')) || [
+        { id: 'w1', userId: 'user_kasif', userName: 'Kasif Bhai', amount: 5000, method: 'UPI', details: 'kasifbhai@okaxis', status: 'paid', date: '2026-10-20' },
+        { id: 'w2', userId: 'user_kasif', userName: 'Kasif Bhai', amount: 4500, method: 'UPI', details: 'kasifbhai@okaxis', status: 'pending', date: '2026-11-08' },
+        { id: 'w3', userId: 'user_rohit', userName: 'Rohit Sharma', amount: 2000, method: 'Bank Transfer', details: 'HDFC0001234 A/C 987654321', status: 'pending', date: '2026-11-09' }
+      ]);
+      const [commissions, setCommissions] = useState(() => JSON.parse(localStorage.getItem('ap_commissions')) || [
+        { id: 'c1', userId: 'user_kasif', userName: 'Kasif Bhai', partnerName: 'Amazon India', amount: 5084, reason: 'Samsung S24 Ultra Purchase', status: 'approved', date: '2026-11-05' },
+        { id: 'c2', userId: 'user_kasif', userName: 'Kasif Bhai', partnerName: 'AffiliatePro', amount: 250, reason: 'Referral Bonus: Rohit', status: 'approved', date: '2026-11-06' },
+        { id: 'c3', userId: 'user_rohit', userName: 'Rohit Sharma', partnerName: 'Flipkart', amount: 4901, reason: 'MacBook Air M3 Purchase', status: 'pending', date: '2026-11-08' }
+      ]);
+      const [notifications, setNotifications] = useState(() => JSON.parse(localStorage.getItem('ap_notifications')) || [
+        { id: 'n1', title: 'Welcome to AffiliatePro!', message: 'Start sharing affiliate links and earn high commissions.', date: 'Just now' },
+        { id: 'n2', title: 'Diwali Electronics Blast', message: 'Extra 5% bonus commission on all Amazon orders today.', date: '2h ago' }
+      ]);
+      const [auditLogs, setAuditLogs] = useState(() => JSON.parse(localStorage.getItem('ap_audit')) || [
+        { id: 'a1', action: 'Admin Login', details: 'kasifbhaityu568@gmail.com verified with password', timestamp: '2026-11-09 10:15:20' },
+        { id: 'a2', action: 'Triple Tap Detected', details: 'Logo tapped 3 times in 1.2s to open Admin Gateway', timestamp: '2026-11-09 10:14:55' }
+      ]);
+
+      // Navigation & Layout State
+      const [activeTab, setActiveTab] = useState('home'); // 'home', 'earnings', 'wallet', 'offers', 'more', 'admin'
+      const [adminSubTab, setAdminSubTab] = useState(2); // 1 to 12 modules
       const [searchQuery, setSearchQuery] = useState('');
-
-      // EarnKaro Admin Product Form State
-      const [ekUrl, setEkUrl] = useState('');
-      const [prodTitle, setProdTitle] = useState('');
-      const [prodImage, setProdImage] = useState('');
-      const [prodPrice, setProdPrice] = useState('');
-      const [prodMrp, setProdMrp] = useState('');
-      const [prodPartner, setProdPartner] = useState('Flipkart');
-      const [prodCommission, setProdCommission] = useState('6.5%');
-      const [isFetchingMeta, setIsFetchingMeta] = useState(false);
-      const [fetchStatusMsg, setFetchStatusMsg] = useState('');
-
-      // Modals
       const [customTab, setCustomTab] = useState({ open: false, url: '', title: '' });
       const [showAdminLogin, setShowAdminLogin] = useState(false);
       const [isAdmin, setIsAdmin] = useState(false);
+      const [adminPassword, setAdminPassword] = useState('Admin@2026');
       const [showShareModal, setShowShareModal] = useState(false);
       const [selectedOffer, setSelectedOffer] = useState(null);
 
-      // Secret Triple Tap on Logo
+      // Secret Triple Tap Tracker
       const [taps, setTaps] = useState([]);
-
       const handleLogoTap = () => {
         const now = Date.now();
         const recent = [...taps, now].filter(t => now - t < 1500);
         setTaps(recent);
         if (recent.length >= 3) {
           setTaps([]);
+          setAuditLogs(prev => [{ id: 'a_' + Date.now(), action: 'Secret Triple-Tap Triggered', details: 'Admin Gateway accessed from UI', timestamp: new Date().toLocaleString() }, ...prev]);
           setShowAdminLogin(true);
         }
       };
 
-      // Handle Auto-Fetch from EarnKaro / fktr.in Link
-      const handleAutoFetchLink = async (inputLink) => {
-        const linkToUse = (inputLink || ekUrl).trim();
-        if (!linkToUse) {
-          alert('भाई पहले EarnKaro (fktr.in) या Flipkart का लिंक पेस्ट करो!');
-          return;
-        }
-        setIsFetchingMeta(true);
-        setFetchStatusMsg('EarnKaro लिंक से Product Title, Image और Live Price निकाला जा रहा है...');
-
-        try {
-          const data = await fetchProductFromAffiliateLink(linkToUse);
-          if (data.title) setProdTitle(data.title);
-          if (data.imageUrl) setProdImage(data.imageUrl);
-          if (data.discountedPrice) setProdPrice(String(data.discountedPrice));
-          if (data.originalPrice) setProdMrp(String(data.originalPrice));
-          if (data.partnerName) setProdPartner(data.partnerName);
-
-          if (data.title || data.imageUrl || data.discountedPrice) {
-            setFetchStatusMsg('✅ Details Auto-Filled! आप चाहें तो नीचे चेक करके Publish कर सकते हैं।');
-          } else {
-            setFetchStatusMsg('⚠️ शॉर्ट लिंक सिक्योरिटी की वजह से कुछ डिटेल्स ब्लॉक हुईं, कृपया नाम/प्राइस चेक कर लें।');
-          }
-        } catch (err) {
-          setFetchStatusMsg('❌ लिंक फेच करने में दिक्कत आई, आप मैन्युअली भर सकते हैं।');
-        } finally {
-          setIsFetchingMeta(false);
-        }
-      };
-
-      // Add Product to Offers List
-      const handleAddProductOffer = () => {
-        if (!ekUrl.trim() || !prodTitle.trim()) {
-          alert('Product Link और Title ज़रूरी हैं!');
-          return;
-        }
-        const priceNum = Number(prodPrice) || 999;
-        const mrpNum = Number(prodMrp) || Math.round(priceNum * 1.25);
-        const discountPct = mrpNum > priceNum ? Math.round(((mrpNum - priceNum) / mrpNum) * 100) : 15;
-
-        const newOffer = {
-          id: 'offer_' + Date.now(),
-          title: prodTitle.trim(),
-          description: `Best deal via ${prodPartner}. Verified EarnKaro Commission Link.`,
-          imageUrl: prodImage.trim() || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
-          partnerId: 'partner_' + prodPartner.toLowerCase(),
-          partnerName: prodPartner,
-          originalPrice: mrpNum,
-          discountedPrice: priceNum,
-          discountPercent: discountPct,
-          commissionRate: prodCommission || '5.0%',
-          affiliateUrl: ekUrl.trim(), // Saves exact EarnKaro link!
-          category: 'Electronics',
-          isTrending: true,
-          isBestDeal: true,
-          status: 'active'
-        };
-
-        setOffers(prev => [newOffer, ...prev]);
-        setEkUrl('');
-        setProdTitle('');
-        setProdImage('');
-        setProdPrice('');
-        setProdMrp('');
-        setFetchStatusMsg('');
-        if (window.confetti) confetti();
-        alert('🎉 प्रोडक्ट सफलतापूर्वक आपकी वेबसाइट पर लाइव हो गया है!');
-      };
-
-      // Refresh Live Price for an Existing Offer
-      const handleRefreshOfferPrice = async (offerId, url) => {
-        setFetchStatusMsg(`🔄 Updating live price for ${offerId}...`);
-        const data = await fetchProductFromAffiliateLink(url);
-        if (data.discountedPrice) {
-          setOffers(prev => prev.map(o => {
-            if (o.id === offerId) {
-              const newPrice = Number(data.discountedPrice);
-              const newMrp = Number(data.originalPrice) || o.originalPrice;
-              const newDisc = newMrp > newPrice ? Math.round(((newMrp - newPrice) / newMrp) * 100) : o.discountPercent;
-              return {
-                ...o,
-                discountedPrice: newPrice,
-                originalPrice: newMrp,
-                discountPercent: newDisc,
-                title: data.title || o.title,
-                imageUrl: data.imageUrl || o.imageUrl
-              };
-            }
-            return o;
-          }));
-          alert(`✅ नया Live Price अपडेट हो गया: ₹${data.discountedPrice}`);
-        } else {
-          const manualPrice = prompt('फ्लिपकार्ट कैप्चा के कारण ऑटो-प्राइस नहीं मिला। नया प्राइस (₹) दर्ज करें:');
-          if (manualPrice && !isNaN(manualPrice)) {
-            setOffers(prev => prev.map(o => o.id === offerId ? { ...o, discountedPrice: Number(manualPrice) } : o));
-          }
-        }
-        setFetchStatusMsg('');
-      };
-
-      // Outbound Affiliate Link Opener
-      const openAffiliateLink = (url, title, partnerId) => {
+      // Outbound Click Handler
+      const openAffiliateLink = (url, title, partnerId, offerId) => {
         if (partnerId) {
           setPartners(prev => prev.map(p => p.id === partnerId ? { ...p, clickCount: p.clickCount + 1 } : p));
         }
         if (currentUser) {
           setCurrentUser(prev => ({ ...prev, totalClicks: prev.totalClicks + 1 }));
+          setUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, totalClicks: u.totalClicks + 1 } : u));
         }
         setCustomTab({ open: true, url, title });
       };
 
-      // Save on change
+      // Save to localStorage
       useEffect(() => { localStorage.setItem('ap_partners', JSON.stringify(partners)); }, [partners]);
       useEffect(() => { localStorage.setItem('ap_offers', JSON.stringify(offers)); }, [offers]);
+      useEffect(() => { localStorage.setItem('ap_banners', JSON.stringify(banners)); }, [banners]);
+      useEffect(() => { localStorage.setItem('ap_users', JSON.stringify(users)); }, [users]);
       useEffect(() => { localStorage.setItem('ap_user', JSON.stringify(currentUser)); }, [currentUser]);
+      useEffect(() => { localStorage.setItem('ap_settings', JSON.stringify(settings)); }, [settings]);
       useEffect(() => { localStorage.setItem('ap_withdrawals', JSON.stringify(withdrawals)); }, [withdrawals]);
+      useEffect(() => { localStorage.setItem('ap_commissions', JSON.stringify(commissions)); }, [commissions]);
+      useEffect(() => { localStorage.setItem('ap_notifications', JSON.stringify(notifications)); }, [notifications]);
+      useEffect(() => { localStorage.setItem('ap_audit', JSON.stringify(auditLogs)); }, [auditLogs]);
+
+      // Admin Module Definitions (All 12 Modules)
+      const adminModulesList = [
+        { id: 1, name: 'User Management', icon: Icons.Users, color: 'text-sky-400' },
+        { id: 2, name: 'Partner Management', icon: Icons.ShoppingBag, color: 'text-[#FFC928]', badge: 'Crucial' },
+        { id: 3, name: 'Product & Offers', icon: Icons.Tag, color: 'text-emerald-400' },
+        { id: 4, name: 'Banner Carousel', icon: Icons.Image, color: 'text-purple-400' },
+        { id: 5, name: 'Referral Rewards', icon: Icons.Gift, color: 'text-amber-400' },
+        { id: 6, name: 'Earnings Ledger', icon: Icons.TrendingUp, color: 'text-green-400' },
+        { id: 7, name: 'Withdrawal Desk', icon: Icons.Wallet, color: 'text-blue-400', count: withdrawals.filter(w => w.status === 'pending').length },
+        { id: 8, name: 'Notifications', icon: Icons.Bell, color: 'text-yellow-400' },
+        { id: 9, name: 'Home Layout', icon: Icons.Layout, color: 'text-indigo-400' },
+        { id: 10, name: 'App Settings', icon: Icons.Settings, color: 'text-zinc-300' },
+        { id: 11, name: 'Analytics & Traffic', icon: Icons.BarChart, color: 'text-teal-400' },
+        { id: 12, name: 'Security & Audit', icon: Icons.Shield, color: 'text-rose-400' },
+      ];
 
       return (
         <div className="min-h-screen bg-[#050608] text-[#F3F4F6] flex flex-col items-center">
@@ -586,13 +421,13 @@
           <div className="w-full bg-[#0E1015] border-b border-white/[0.08] px-4 py-2 flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#FFC928]"></span>
-              <span className="font-bold font-display text-white">AffiliatePro</span>
-              <span className="text-zinc-500 hidden sm:inline">• EarnKaro Auto-Fetch Edition</span>
+              <span className="font-bold font-display text-white">{settings.appName}</span>
+              <span className="text-zinc-500 hidden sm:inline">• 12-Module Admin Complete</span>
             </div>
 
             <div className="flex items-center gap-2">
               <button 
-                onClick={() => setShowAdminLogin(true)}
+                onClick={() => { handleLogoTap(); handleLogoTap(); handleLogoTap(); }}
                 className="px-2.5 py-1 rounded-md bg-[#FFC928]/15 border border-[#FFC928]/40 text-[#FFC928] font-bold text-[11px] flex items-center gap-1 hover:bg-[#FFC928]/25"
                 title="Triple tap logo or click here"
               >
@@ -602,7 +437,7 @@
             </div>
           </div>
 
-          {/* App Body */}
+          {/* App Body Container */}
           <div className="w-full max-w-7xl mx-auto flex-1 flex flex-col min-h-screen">
             <div className="w-full flex-1 flex flex-col relative">
 
@@ -620,9 +455,9 @@
                   </div>
                   <div>
                     <h1 className="font-display font-bold text-base text-white leading-tight">
-                      Affiliate<span className="text-[#FFC928]">Pro</span>
+                      {settings.appName.slice(0, -3)}<span className="text-[#FFC928]">{settings.appName.slice(-3)}</span>
                     </h1>
-                    <span className="text-[10px] text-zinc-400 block -mt-0.5">Earn More • Grow Faster</span>
+                    <span className="text-[10px] text-zinc-400 block -mt-0.5">{settings.tagline}</span>
                   </div>
                 </div>
 
@@ -633,15 +468,15 @@
                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#15171D] border border-[#FFC928]/30 hover:border-[#FFC928] text-xs font-bold text-[#FFC928]"
                   >
                     <Icons.Wallet />
-                    <span>₹{currentUser.walletBalance.toLocaleString()}</span>
+                    <span>{settings.currency}{currentUser.walletBalance.toLocaleString()}</span>
                   </button>
 
                   {isAdmin && (
                     <button 
                       onClick={() => setActiveTab('admin')}
-                      className="px-2.5 py-1.5 rounded-lg bg-[#FFC928] text-[#08090C] text-xs font-extrabold shadow"
+                      className="px-2.5 py-1 rounded-full bg-[#FFC928] text-[#08090C] text-xs font-bold shadow-md shadow-[#FFC928]/30"
                     >
-                      Admin Panel
+                      Admin
                     </button>
                   )}
                 </div>
@@ -650,180 +485,210 @@
               {/* Scrollable Main Area */}
               <main className="flex-1 overflow-y-auto p-4 space-y-5 pb-24">
                 
-                {/* TAB: HOME */}
+                {/* ============================================================== */}
+                {/* USER TAB: HOME                                                 */}
+                {/* ============================================================== */}
                 {activeTab === 'home' && (
                   <div className="space-y-5">
                     {/* Category Filter Pills */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                      <span className="px-3 py-1 rounded-full bg-[#FFC928] text-[#08090C] text-xs font-bold shadow-md shadow-[#FFC928]/30 flex items-center gap-1 shrink-0">
-                        <Icons.Sparkles /> Top Offers
-                      </span>
-                      <span className="px-3 py-1 rounded-full bg-[#15171D] text-zinc-300 text-xs font-semibold border border-white/[0.08] shrink-0">
-                        🔥 Trending
-                      </span>
-                      <span className="px-3 py-1 rounded-full bg-[#15171D] text-zinc-300 text-xs font-semibold border border-white/[0.08] shrink-0">
-                        🏷️ Best Deals
-                      </span>
-                    </div>
-
-                    {/* Promotional Campaign Banner */}
-                    <div 
-                      onClick={() => openAffiliateLink('https://www.amazon.in/?tag=affiliatepro21-21', 'Festive Super Sale')}
-                      className="relative rounded-2xl overflow-hidden border border-white/10 shadow-xl bg-[#15171D] h-44 cursor-pointer group"
-                    >
-                      <img 
-                        src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&auto=format&fit=crop&q=80" 
-                        alt="Festive Super Sale" 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#08090C] via-[#08090C]/60 to-transparent" />
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#08090C]/85 via-transparent to-transparent" />
-                      <div className="absolute bottom-3 left-4 right-4">
-                        <span className="text-[10px] font-extrabold text-[#FFC928] uppercase tracking-wider bg-[#FFC928]/20 border border-[#FFC928]/30 px-2 py-0.5 rounded">
-                          Featured Campaign
+                    {settings.showCategoryPills && (
+                      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                        <span className="px-3 py-1 rounded-full bg-[#FFC928] text-[#08090C] text-xs font-bold shadow-md shadow-[#FFC928]/30 flex items-center gap-1 shrink-0">
+                          <Icons.Sparkles /> Top Offers
                         </span>
-                        <h2 className="font-display font-extrabold text-base sm:text-lg text-white mt-1 leading-tight">
-                          Festive Electronics Super Sale
-                        </h2>
-                        <p className="text-xs text-zinc-300 mt-0.5">
-                          Flat 45% Off + Extra 8% Golden Affiliate Cash Reward
-                        </p>
+                        <span className="px-3 py-1 rounded-full bg-[#15171D] text-zinc-300 text-xs font-semibold border border-white/[0.08] shrink-0">
+                          🔥 Trending
+                        </span>
+                        <span className="px-3 py-1 rounded-full bg-[#15171D] text-zinc-300 text-xs font-semibold border border-white/[0.08] shrink-0">
+                          🏷️ Best Deals
+                        </span>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Promotional Campaign Banner Carousel */}
+                    {settings.showBanner && banners.length > 0 && (
+                      <div 
+                        onClick={() => openAffiliateLink(banners[0].affiliateUrl, banners[0].title)}
+                        className="relative rounded-2xl overflow-hidden border border-white/10 shadow-xl bg-[#15171D] h-44 cursor-pointer group"
+                      >
+                        <img 
+                          src={banners[0].imageUrl} 
+                          alt={banners[0].title} 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#08090C] via-[#08090C]/60 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#08090C]/85 via-transparent to-transparent" />
+                        <div className="absolute bottom-3 left-4 right-4">
+                          <span className="text-[10px] font-extrabold text-[#FFC928] uppercase tracking-wider bg-[#FFC928]/20 border border-[#FFC928]/30 px-2 py-0.5 rounded">
+                            Featured Campaign
+                          </span>
+                          <h2 className="font-display font-extrabold text-base sm:text-lg text-white mt-1 leading-tight">
+                            {banners[0].title}
+                          </h2>
+                          <p className="text-xs text-zinc-300 mt-0.5">
+                            {banners[0].subtitle}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     {/* FEATURED OFFERS */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2.5">
-                        <h3 className="font-display font-bold text-base text-white flex items-center gap-1.5">
-                          <span>🎁</span>
-                          <span>Featured Partners</span>
-                        </h3>
-                        <button onClick={() => setActiveTab('offers')} className="text-xs text-[#FFC928] font-bold hover:underline flex items-center gap-0.5">
-                          <span>View All</span>
-                          <span>→</span>
-                        </button>
-                      </div>
+                    {settings.showFeaturedOffers && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2.5">
+                          <h3 className="font-display font-bold text-base text-white flex items-center gap-1.5">
+                            <span>🎁</span>
+                            <span>Featured Offers</span>
+                          </h3>
+                          <button onClick={() => setActiveTab('offers')} className="text-xs text-[#FFC928] font-bold hover:underline flex items-center gap-0.5">
+                            <span>View All</span>
+                            <span>→</span>
+                          </button>
+                        </div>
 
-                      <div className="rounded-2xl bg-[#0E1015] border border-white/[0.08] p-3">
-                        <div className="grid grid-cols-4 gap-2">
-                          {partners.slice(0, 4).map(p => (
-                            <div 
-                              key={p.id} 
-                              onClick={() => openAffiliateLink(p.affiliateUrl, p.name, p.id)}
-                              className="p-2.5 rounded-xl bg-[#15171D] hover:bg-[#1C1F27] border border-white/[0.06] hover:border-[#FFC928]/50 flex flex-col items-center text-center cursor-pointer transition-all active:scale-95"
-                            >
-                              <div className="w-10 h-10 rounded-xl bg-[#08090C] border border-white/10 flex items-center justify-center p-1 mb-1.5 overflow-hidden">
-                                {p.logo ? (
-                                  <img src={p.logo} alt={p.name} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                ) : (
-                                  <span className="font-extrabold text-[#FFC928] text-sm">{p.name[0]}</span>
-                                )}
+                        <div className="rounded-2xl bg-[#0E1015] border border-white/[0.08] p-3">
+                          <div className="grid grid-cols-4 gap-2">
+                            {partners.slice(0, 4).map(p => (
+                              <div 
+                                key={p.id} 
+                                onClick={() => openAffiliateLink(p.affiliateUrl, p.name, p.id)}
+                                className="p-2.5 rounded-xl bg-[#15171D] hover:bg-[#1C1F27] border border-white/[0.06] hover:border-[#FFC928]/50 flex flex-col items-center text-center cursor-pointer transition-all active:scale-95"
+                                title={'Open saved affiliate URL for ' + p.name}
+                              >
+                                <div className="w-10 h-10 rounded-xl bg-[#08090C] border border-white/10 flex items-center justify-center p-1 mb-1.5 overflow-hidden">
+                                  {p.logo ? (
+                                    <img src={p.logo} alt={p.name} className="w-full h-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                  ) : (
+                                    <span className="font-extrabold text-[#FFC928] text-sm">{p.name[0]}</span>
+                                  )}
+                                </div>
+                                <span className="font-bold text-xs text-white truncate w-full">{p.name}</span>
+                                <span className="text-[10px] font-extrabold text-[#FFC928] truncate w-full mt-0.5">{p.commissionInfo}</span>
                               </div>
-                              <span className="font-bold text-xs text-white truncate w-full">{p.name}</span>
-                              <span className="text-[10px] font-extrabold text-[#FFC928] truncate w-full mt-0.5">{p.commissionInfo}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ALL PRODUCTS & DEALS */}
+                    {settings.showAllProducts && (
+                      <div className="space-y-3 pt-1">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-display font-bold text-base text-white flex items-center gap-1.5">
+                            <Icons.ShoppingBag />
+                            <span>All Products &amp; Deals</span>
+                          </h3>
+                          <span className="text-[10px] text-zinc-400 bg-white/[0.05] px-2 py-0.5 rounded-full">{offers.length} Products</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {offers.map(o => (
+                            <div key={o.id} onClick={() => setSelectedOffer(o)} className="rounded-2xl bg-[#15171D] border border-white/[0.08] hover:border-[#FFC928]/40 overflow-hidden cursor-pointer transition-all">
+                              <div className="relative h-36 bg-[#08090C]">
+                                <img src={o.imageUrl} className="w-full h-full object-cover" />
+                                <span className="absolute top-2 left-2 text-[10px] font-extrabold bg-[#FFC928] text-[#08090C] px-2 py-0.5 rounded">
+                                  {o.discountPercent}% OFF
+                                </span>
+                                <span className="absolute top-2 right-2 text-[10px] font-semibold bg-black/70 text-zinc-300 px-2 py-0.5 rounded border border-white/10">
+                                  {o.partnerName}
+                                </span>
+                              </div>
+                              <div className="p-3 space-y-2">
+                                <h4 className="font-bold text-xs text-white truncate">{o.title}</h4>
+                                <div className="flex items-baseline justify-between">
+                                  <div className="flex items-baseline gap-1.5">
+                                    <span className="font-extrabold text-sm text-white">{settings.currency}{o.discountedPrice.toLocaleString()}</span>
+                                    <span className="text-[10px] text-zinc-400 line-through">{settings.currency}{o.originalPrice.toLocaleString()}</span>
+                                  </div>
+                                  <span className="text-[11px] font-bold text-[#FFC928]">Earn: {o.commissionRate}</span>
+                                </div>
+                                <div className="flex items-center gap-2 pt-1 border-t border-white/[0.06]">
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigator.clipboard.writeText(o.title + ': ' + o.affiliateUrl);
+                                      triggerConfetti();
+                                      alert('Link copied with your referral code!');
+                                    }}
+                                    className="p-1.5 rounded-lg bg-[#252833] text-zinc-300 hover:text-white"
+                                  >
+                                    <Icons.Share2 />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openAffiliateLink(o.affiliateUrl, o.title, o.partnerId);
+                                    }}
+                                    className="flex-1 py-1.5 rounded-xl bg-gradient-to-r from-[#FFC928] to-[#D99B16] text-[#08090C] text-xs font-bold flex items-center justify-center gap-1"
+                                  >
+                                    <span>View Offer</span>
+                                    <Icons.ExternalLink />
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           ))}
                         </div>
                       </div>
-                    </div>
-
-                    {/* ALL PRODUCTS & DEALS */}
-                    <div className="space-y-3 pt-1">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-display font-bold text-base text-white flex items-center gap-1.5">
-                          <Icons.ShoppingBag />
-                          <span>All Products &amp; Deals</span>
-                        </h3>
-                        <span className="text-[10px] text-zinc-400 bg-white/[0.05] px-2 py-0.5 rounded-full">{offers.length} Products</span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {offers.map(o => (
-                          <div key={o.id} onClick={() => setSelectedOffer(o)} className="rounded-2xl bg-[#15171D] border border-white/[0.08] hover:border-[#FFC928]/40 overflow-hidden cursor-pointer transition-all">
-                            <div className="relative h-40 bg-white flex items-center justify-center p-2">
-                              <img src={o.imageUrl} alt={o.title} className="max-h-full max-w-full object-contain" />
-                              <span className="absolute top-2 left-2 text-[10px] font-extrabold bg-[#FFC928] text-[#08090C] px-2 py-0.5 rounded shadow">
-                                {o.discountPercent}% OFF
-                              </span>
-                              <span className="absolute top-2 right-2 text-[10px] font-semibold bg-black/80 text-zinc-200 px-2 py-0.5 rounded border border-white/10">
-                                {o.partnerName}
-                              </span>
-                            </div>
-                            <div className="p-3 space-y-2">
-                              <h4 className="font-bold text-xs text-white line-clamp-2 min-h-[2rem]">{o.title}</h4>
-                              <div className="flex items-baseline justify-between">
-                                <div className="flex items-baseline gap-1.5">
-                                  <span className="font-extrabold text-base text-white">₹{Number(o.discountedPrice).toLocaleString()}</span>
-                                  <span className="text-[11px] text-zinc-400 line-through">₹{Number(o.originalPrice).toLocaleString()}</span>
-                                </div>
-                                <span className="text-[11px] font-bold text-[#FFC928]">Earn: {o.commissionRate}</span>
-                              </div>
-                              <div className="flex items-center gap-2 pt-1 border-t border-white/[0.06]">
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigator.clipboard.writeText(`${o.title} - Deal Price ₹${o.discountedPrice}: ${o.affiliateUrl}`);
-                                    if (window.confetti) confetti();
-                                    alert('EarnKaro Deal Link Copied!');
-                                  }}
-                                  className="p-1.5 rounded-lg bg-[#252833] text-zinc-300 hover:text-white"
-                                >
-                                  <Icons.Share2 />
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openAffiliateLink(o.affiliateUrl, o.title, o.partnerId);
-                                  }}
-                                  className="flex-1 py-1.5 rounded-xl bg-gradient-to-r from-[#FFC928] to-[#D99B16] text-[#08090C] text-xs font-bold flex items-center justify-center gap-1"
-                                >
-                                  <span>Buy / View Offer</span>
-                                  <Icons.ExternalLink />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 )}
 
-                {/* TAB: EARNINGS */}
+                {/* ============================================================== */}
+                {/* USER TAB: EARNINGS                                             */}
+                {/* ============================================================== */}
                 {activeTab === 'earnings' && (
                   <div className="space-y-4">
                     <h2 className="font-display font-bold text-xl text-white">Earnings & Commissions</h2>
                     <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1C1F27] to-[#15171D] border border-[#FFC928]/30">
                       <span className="text-[10px] text-zinc-400 font-semibold uppercase">Total Confirmed</span>
-                      <div className="text-3xl font-extrabold text-[#FFC928] font-display mt-0.5">₹{currentUser.totalEarnings.toLocaleString()}</div>
+                      <div className="text-3xl font-extrabold text-[#FFC928] font-display mt-0.5">{settings.currency}{currentUser.totalEarnings.toLocaleString()}</div>
                       <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/[0.08] text-xs">
                         <div>
                           <span className="text-zinc-400 text-[10px] block">Pending Verification</span>
-                          <span className="font-bold text-amber-400">₹{currentUser.pendingBalance.toLocaleString()}</span>
+                          <span className="font-bold text-amber-400">{settings.currency}{currentUser.pendingBalance.toLocaleString()}</span>
                         </div>
                         <div>
                           <span className="text-zinc-400 text-[10px] block">Available in Wallet</span>
-                          <span className="font-bold text-emerald-400">₹{currentUser.walletBalance.toLocaleString()}</span>
+                          <span className="font-bold text-emerald-400">{settings.currency}{currentUser.walletBalance.toLocaleString()}</span>
                         </div>
                       </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h3 className="font-bold text-xs text-white uppercase tracking-wider">Your Commission Ledger</h3>
+                      {commissions.filter(c => c.userId === currentUser.id).map(c => (
+                        <div key={c.id} className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
+                          <div>
+                            <span className="font-bold text-white block">{c.reason}</span>
+                            <span className="text-[10px] text-zinc-400">{c.partnerName} • {c.date}</span>
+                          </div>
+                          <span className="font-bold text-[#FFC928]">+{settings.currency}{c.amount.toLocaleString()}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
 
-                {/* TAB: WALLET */}
+                {/* ============================================================== */}
+                {/* USER TAB: WALLET                                               */}
+                {/* ============================================================== */}
                 {activeTab === 'wallet' && (
                   <div className="space-y-4">
                     <h2 className="font-display font-bold text-xl text-white">Affiliate Wallet & Payout</h2>
                     <div className="p-4 rounded-2xl bg-[#15171D] border border-[#FFC928]/30">
                       <span className="text-xs text-zinc-400">Available Balance</span>
-                      <div className="text-3xl font-extrabold text-[#FFC928] font-display">₹{currentUser.walletBalance.toLocaleString()}</div>
+                      <div className="text-3xl font-extrabold text-[#FFC928] font-display">{settings.currency}{currentUser.walletBalance.toLocaleString()}</div>
+                      <span className="text-[10px] text-zinc-500 mt-1 block">Minimum withdrawal: {settings.currency}{settings.minWithdrawal}</span>
                     </div>
 
+                    {/* Withdrawal Form */}
                     <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
                       <h3 className="font-bold text-sm text-white">Request Payout</h3>
                       <div>
-                        <label className="text-[11px] text-zinc-400 block mb-1">Amount (₹)</label>
-                        <input id="wdrAmount" type="number" defaultValue="2000" className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs font-bold" />
+                        <label className="text-[11px] text-zinc-400 block mb-1">Amount ({settings.currency})</label>
+                        <input id="wdrAmount" type="number" defaultValue={settings.minWithdrawal} className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs font-bold" />
                       </div>
                       <div>
                         <label className="text-[11px] text-zinc-400 block mb-1">UPI ID or Bank Details</label>
@@ -837,20 +702,43 @@
                             alert('Insufficient available balance!');
                             return;
                           }
+                          if (amt < settings.minWithdrawal) {
+                            alert('Minimum withdrawal amount is ' + settings.currency + settings.minWithdrawal);
+                            return;
+                          }
                           setCurrentUser(prev => ({ ...prev, walletBalance: prev.walletBalance - amt, pendingBalance: prev.pendingBalance + amt }));
-                          setWithdrawals(prev => [{ id: 'w_' + Date.now(), amount: amt, method: 'UPI', details: upi, status: 'pending', date: 'Just now' }, ...prev]);
-                          if (window.confetti) confetti();
-                          alert('Withdrawal request submitted!');
+                          setUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, walletBalance: u.walletBalance - amt, pendingBalance: u.pendingBalance + amt } : u));
+                          setWithdrawals(prev => [{ id: 'w_' + Date.now(), userId: currentUser.id, userName: currentUser.name, amount: amt, method: 'UPI', details: upi, status: 'pending', date: 'Just now' }, ...prev]);
+                          triggerConfetti();
+                          alert('Withdrawal request submitted for admin review!');
                         }}
                         className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] text-xs font-bold hover:bg-[#D99B16]"
                       >
                         Submit Withdrawal Request
                       </button>
                     </div>
+
+                    {/* Withdrawal History */}
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-xs text-white">Withdrawal History</h4>
+                      {withdrawals.filter(w => w.userId === currentUser.id).map(w => (
+                        <div key={w.id} className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
+                          <div>
+                            <span className="font-bold text-white block">{settings.currency}{w.amount.toLocaleString()} via {w.method}</span>
+                            <span className="text-[10px] text-zinc-400 font-mono">{w.details}</span>
+                          </div>
+                          <span className={'px-2 py-0.5 rounded text-[10px] font-bold uppercase ' + (w.status === 'paid' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400')}>
+                            {w.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
-                {/* TAB: OFFERS */}
+                {/* ============================================================== */}
+                {/* USER TAB: OFFERS                                               */}
+                {/* ============================================================== */}
                 {activeTab === 'offers' && (
                   <div className="space-y-4">
                     <h2 className="font-display font-bold text-xl text-white">All Deals & Offers</h2>
@@ -864,13 +752,11 @@
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {offers.filter(o => o.title.toLowerCase().includes(searchQuery.toLowerCase())).map(o => (
                         <div key={o.id} onClick={() => setSelectedOffer(o)} className="rounded-2xl bg-[#15171D] border border-white/[0.08] p-3 cursor-pointer hover:border-[#FFC928]/40">
-                          <div className="h-32 bg-white rounded-xl mb-2 flex items-center justify-center p-2">
-                            <img src={o.imageUrl} className="max-h-full max-w-full object-contain" />
-                          </div>
+                          <img src={o.imageUrl} className="w-full h-32 object-cover rounded-xl mb-2" />
                           <span className="text-[10px] text-[#FFC928] font-bold">{o.discountPercent}% OFF • {o.partnerName}</span>
                           <h4 className="font-bold text-xs text-white truncate mt-0.5">{o.title}</h4>
                           <div className="flex items-baseline justify-between mt-2">
-                            <span className="font-extrabold text-sm text-white">₹{Number(o.discountedPrice).toLocaleString()}</span>
+                            <span className="font-extrabold text-sm text-white">{settings.currency}{o.discountedPrice.toLocaleString()}</span>
                             <span className="text-xs font-bold text-[#FFC928]">Earn {o.commissionRate}</span>
                           </div>
                         </div>
@@ -879,262 +765,836 @@
                   </div>
                 )}
 
-                {/* TAB: MORE */}
+                {/* ============================================================== */}
+                {/* USER TAB: MORE                                                 */}
+                {/* ============================================================== */}
                 {activeTab === 'more' && (
                   <div className="space-y-3">
-                    <h2 className="font-display font-bold text-xl text-white">More Options</h2>
+                    <h2 className="font-display font-bold text-xl text-white">Account & System</h2>
                     <button onClick={() => setShowShareModal(true)} className="w-full p-3 rounded-2xl bg-[#15171D] border border-white/[0.08] flex items-center justify-between text-xs text-white font-bold">
-                      <span>Referral Link & Rewards</span>
+                      <span className="flex items-center gap-2"><Icons.Gift /> Referral Link & Rewards (Earn {settings.currency}{settings.referralBonus})</span>
                       <Icons.Share2 />
                     </button>
                     <button onClick={() => setShowAdminLogin(true)} className="w-full p-3 rounded-2xl bg-[#15171D] border border-[#FFC928]/30 flex items-center justify-between text-xs text-[#FFC928] font-bold">
-                      <span>Administrator Login (Add EarnKaro Products)</span>
-                      <Icons.Shield />
+                      <span className="flex items-center gap-2"><Icons.Shield /> Administrator Control Center (12 Modules)</span>
+                      <span>→</span>
                     </button>
                   </div>
                 )}
 
-                {/* TAB: ADMIN PANEL (WITH EARNKARO AUTO-FETCH) */}
+                {/* ============================================================== */}
+                {/* TAB: ADMIN CONSOLE (COMPLETE 12 MODULES)                       */}
+                {/* ============================================================== */}
                 {activeTab === 'admin' && (
                   <div className="space-y-5">
-                    <div className="flex items-center justify-between">
-                      <h2 className="font-display font-bold text-xl text-white">Admin Console</h2>
-                      <button onClick={() => setActiveTab('home')} className="px-3 py-1 rounded-lg bg-[#15171D] border border-[#FFC928]/40 text-xs text-[#FFC928] font-bold">
-                        ← Back to App
-                      </button>
-                    </div>
-
-                    {/* NEW: EARNKARO LINK AUTO-FETCH PRODUCT ADDER */}
-                    <div className="p-4 rounded-2xl bg-[#15171D] border-2 border-[#FFC928] space-y-3 shadow-lg shadow-[#FFC928]/10">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-display font-bold text-sm text-[#FFC928] flex items-center gap-1.5">
-                          <Icons.Sparkles />
-                          <span>Add Product via EarnKaro Link (Auto-Fetch)</span>
-                        </h3>
-                        <span className="text-[10px] bg-[#FFC928]/20 text-[#FFC928] px-2 py-0.5 rounded font-bold">fktr.in / amzn.to</span>
-                      </div>
-
-                      <p className="text-[11px] text-zinc-400">
-                        Flipkart/Amazon से प्रोडक्ट लिंक लेकर EarnKaro पर अपना प्रॉफिट लिंक (`https://fktr.in/...`) बनाएं और नीचे पेस्ट करें:
-                      </p>
-
-                      {/* Link Input + Auto-Fetch Button */}
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <input 
-                          type="text"
-                          value={ekUrl}
-                          onChange={(e) => setEkUrl(e.target.value)}
-                          onPaste={(e) => {
-                            const pasted = e.clipboardData.getData('text');
-                            setEkUrl(pasted);
-                            setTimeout(() => handleAutoFetchLink(pasted), 150);
-                          }}
-                          placeholder="Paste EarnKaro link here (e.g. https://fktr.in/tj5Ye2T)"
-                          className="flex-1 px-3 py-2.5 rounded-xl bg-[#08090C] border border-[#FFC928]/50 text-xs text-white font-mono focus:outline-none focus:border-[#FFC928]"
-                        />
-                        <button
-                          onClick={() => handleAutoFetchLink()}
-                          disabled={isFetchingMeta}
-                          className="px-4 py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-extrabold text-xs flex items-center justify-center gap-1.5 hover:bg-[#D99B16] disabled:opacity-50 shrink-0"
-                        >
-                          <Icons.Refresh />
-                          <span>{isFetchingMeta ? 'Fetching...' : '⚡ Auto-Fetch Details'}</span>
-                        </button>
-                      </div>
-
-                      {fetchStatusMsg && (
-                        <div className="p-2.5 rounded-xl bg-[#08090C] border border-white/10 text-[11px] text-[#FFC928]">
-                          {fetchStatusMsg}
+                    
+                    {/* Admin Header */}
+                    <div className="p-4 rounded-2xl bg-[#121419] border border-[#FFC928]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-display font-extrabold text-lg text-white">Admin Control Center</span>
+                          <span className="px-2 py-0.5 rounded bg-[#FFC928] text-[#08090C] text-[10px] font-extrabold uppercase tracking-wider">SuperAdmin</span>
                         </div>
-                      )}
-
-                      {/* Auto-Filled Product Fields + Live Image Preview */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                        <div className="space-y-2">
-                          <div>
-                            <label className="text-[10px] text-zinc-400 block mb-1">Product Title (Auto-Filled)</label>
-                            <input 
-                              type="text"
-                              value={prodTitle}
-                              onChange={e => setProdTitle(e.target.value)}
-                              placeholder="Product Name"
-                              className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-white"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="text-[10px] text-zinc-400 block mb-1">Product Image URL (Auto-Filled)</label>
-                            <input 
-                              type="text"
-                              value={prodImage}
-                              onChange={e => setProdImage(e.target.value)}
-                              placeholder="https://rukminim2.flixcart.com/..."
-                              className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-white font-mono"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-[10px] text-zinc-400 block mb-1">Live Deal Price (₹)</label>
-                              <input 
-                                type="number"
-                                value={prodPrice}
-                                onChange={e => setProdPrice(e.target.value)}
-                                placeholder="e.g. 1499"
-                                className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-[#FFC928] font-bold"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[10px] text-zinc-400 block mb-1">Original MRP (₹)</label>
-                              <input 
-                                type="number"
-                                value={prodMrp}
-                                onChange={e => setProdMrp(e.target.value)}
-                                placeholder="e.g. 2499"
-                                className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-zinc-300"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-[10px] text-zinc-400 block mb-1">Store / Partner</label>
-                              <select 
-                                value={prodPartner}
-                                onChange={e => setProdPartner(e.target.value)}
-                                className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-white"
-                              >
-                                <option value="Flipkart">Flipkart</option>
-                                <option value="Amazon">Amazon</option>
-                                <option value="Myntra">Myntra</option>
-                                <option value="Ajio">Ajio</option>
-                                <option value="Meesho">Meesho</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="text-[10px] text-zinc-400 block mb-1">User Commission Text</label>
-                              <input 
-                                type="text"
-                                value={prodCommission}
-                                onChange={e => setProdCommission(e.target.value)}
-                                placeholder="e.g. 7% (₹150)"
-                                className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-xs text-white"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Live Preview Box */}
-                        <div className="rounded-xl bg-[#08090C] border border-white/10 p-3 flex flex-col items-center justify-center text-center">
-                          <span className="text-[10px] text-zinc-500 uppercase font-bold mb-2">Live Product Card Preview</span>
-                          {prodImage ? (
-                            <img src={prodImage} alt="Preview" className="h-28 object-contain rounded-lg bg-white p-1.5 mb-2" />
-                          ) : (
-                            <div className="h-28 w-full rounded-lg bg-[#15171D] flex items-center justify-center text-xs text-zinc-500 mb-2">
-                              Image Preview
-                            </div>
-                          )}
-                          <p className="text-xs font-bold text-white line-clamp-2">{prodTitle || 'Product Title Preview'}</p>
-                          <p className="text-sm font-extrabold text-[#FFC928] mt-1">
-                            {prodPrice ? `₹${Number(prodPrice).toLocaleString()}` : '₹0'}
-                          </p>
-                        </div>
+                        <span className="text-[11px] text-zinc-400 font-mono">kasifbhaityu568@gmail.com</span>
                       </div>
-
-                      <button
-                        onClick={handleAddProductOffer}
-                        className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FFC928] to-[#D99B16] text-[#08090C] font-extrabold text-xs shadow-lg"
+                      <button 
+                        onClick={() => setActiveTab('home')}
+                        className="px-3 py-1.5 rounded-xl bg-[#1C1F27] border border-white/10 text-zinc-200 hover:text-white text-xs font-bold flex items-center gap-1 self-start sm:self-auto"
                       >
-                        + Publish Product with EarnKaro Commission Link
+                        <Icons.ArrowLeft />
+                        <span>Return to User App</span>
                       </button>
                     </div>
 
-                    {/* Manage Existing Products & Sync Live Price */}
-                    <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
-                      <h3 className="font-bold text-sm text-white">Manage Products & Live Prices ({offers.length})</h3>
-                      <div className="space-y-2">
-                        {offers.map(o => (
-                          <div key={o.id} className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-                            <div className="flex items-center gap-2.5">
-                              <img src={o.imageUrl} className="w-10 h-10 rounded bg-white object-contain p-0.5 shrink-0" />
+                    {/* 12-Module Selector Pills */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+                      {adminModulesList.map(m => {
+                        const Icon = m.icon;
+                        const isSelected = adminSubTab === m.id;
+                        return (
+                          <button
+                            key={m.id}
+                            onClick={() => setAdminSubTab(m.id)}
+                            className={'p-2.5 rounded-xl border text-left transition-all relative flex flex-col justify-between ' + 
+                              (isSelected ? 'bg-[#FFC928]/15 border-[#FFC928] text-white shadow-lg shadow-[#FFC928]/20' : 'bg-[#15171D] border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/20')}
+                          >
+                            <div className="flex items-center justify-between w-full mb-1">
+                              <span className={m.color}><Icon /></span>
+                              {m.count !== undefined && m.count > 0 && (
+                                <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[9px] font-bold">
+                                  {m.count}
+                                </span>
+                              )}
+                              {m.badge && (
+                                <span className="text-[8px] font-extrabold px-1 rounded bg-[#FFC928] text-[#08090C]">
+                                  {m.badge}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-xs font-bold truncate block">{m.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* ========================================================== */}
+                    {/* MODULE 1: USER MANAGEMENT                                  */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 1 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.Users /> User Management ({users.length} Users)</h3>
+                          <button 
+                            onClick={() => {
+                              const name = prompt('User Full Name:');
+                              const email = prompt('User Email:');
+                              if (name && email) {
+                                const nu = {
+                                  id: 'user_' + Date.now(),
+                                  name,
+                                  email,
+                                  phoneNumber: '+91 99999 88888',
+                                  role: 'user',
+                                  referralCode: 'REF-' + name.slice(0, 4).toUpperCase(),
+                                  walletBalance: 0,
+                                  pendingBalance: 0,
+                                  totalEarnings: 0,
+                                  totalClicks: 0,
+                                  totalReferrals: 0,
+                                  status: 'active'
+                                };
+                                setUsers(prev => [nu, ...prev]);
+                                alert('User added successfully!');
+                              }
+                            }}
+                            className="px-2.5 py-1 rounded bg-[#FFC928] text-[#08090C] text-[10px] font-bold"
+                          >
+                            + Add New User
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {users.map(u => (
+                            <div key={u.id} className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                               <div>
-                                <div className="font-bold text-white line-clamp-1">{o.title}</div>
-                                <div className="text-[11px] text-[#FFC928] font-bold">
-                                  Live Price: ₹{Number(o.discountedPrice).toLocaleString()} • <span className="text-zinc-400 font-mono">{o.affiliateUrl}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-white">{u.name}</span>
+                                  <span className={'px-1.5 py-0.2 rounded text-[9px] font-bold uppercase ' + (u.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400')}>
+                                    {u.status}
+                                  </span>
+                                  {u.role === 'admin' && <span className="px-1.5 py-0.2 rounded bg-[#FFC928]/20 text-[#FFC928] text-[9px] font-bold">ADMIN</span>}
+                                </div>
+                                <span className="text-[10px] text-zinc-400 font-mono block">{u.email} • Code: {u.referralCode}</span>
+                                <div className="flex items-center gap-3 mt-1 text-[11px]">
+                                  <span>Wallet: <strong className="text-emerald-400">{settings.currency}{u.walletBalance}</strong></span>
+                                  <span>Pending: <strong className="text-amber-400">{settings.currency}{u.pendingBalance}</strong></span>
+                                  <span>Clicks: <strong className="text-[#FFC928]">{u.totalClicks}</strong></span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 self-end sm:self-center">
+                                <button 
+                                  onClick={() => {
+                                    const delta = prompt('Add or Deduct balance (e.g. +500 or -200):', '+500');
+                                    if (delta) {
+                                      const n = Number(delta);
+                                      if (!isNaN(n)) {
+                                        setUsers(prev => prev.map(item => item.id === u.id ? { ...item, walletBalance: Math.max(0, item.walletBalance + n) } : item));
+                                        if (currentUser.id === u.id) {
+                                          setCurrentUser(prev => ({ ...prev, walletBalance: Math.max(0, prev.walletBalance + n) }));
+                                        }
+                                        alert('User wallet balance updated!');
+                                      }
+                                    }
+                                  }}
+                                  className="px-2 py-1 rounded bg-[#252833] text-zinc-300 hover:text-white text-[10px] font-bold"
+                                >
+                                  Adjust Balance
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    const nextStatus = u.status === 'active' ? 'banned' : 'active';
+                                    setUsers(prev => prev.map(item => item.id === u.id ? { ...item, status: nextStatus } : item));
+                                  }}
+                                  className={'px-2 py-1 rounded text-[10px] font-bold ' + (u.status === 'active' ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400')}
+                                >
+                                  {u.status === 'active' ? 'Ban' : 'Unban'}
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ========================================================== */}
+                    {/* MODULE 2: PARTNER MANAGEMENT (DYNAMIC AFFILIATE URLS)      */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 2 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-[#FFC928]/40 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-bold text-sm text-white flex items-center gap-1.5">
+                              <Icons.ShoppingBag /> Partner Management (Exact Saved Affiliate URLs)
+                            </h3>
+                            <p className="text-[11px] text-zinc-400 mt-0.5">When users tap any merchant card, this exact saved affiliate URL is opened.</p>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              const name = prompt('Partner Name (e.g. Croma or TataCliq):');
+                              const url = prompt('Exact Affiliate URL:');
+                              const comm = prompt('Commission Info (e.g. Up to 9.5%):', 'Up to 10%');
+                              if (name && url) {
+                                setPartners(prev => [...prev, {
+                                  id: 'partner_' + Date.now(),
+                                  name,
+                                  slug: name.toLowerCase().replace(/\s+/g, ''),
+                                  logo: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=160',
+                                  description: 'Online partner program',
+                                  commissionInfo: comm || 'Up to 10%',
+                                  affiliateUrl: url,
+                                  status: 'active',
+                                  clickCount: 0
+                                }]);
+                                alert('Partner added successfully!');
+                              }
+                            }}
+                            className="px-2.5 py-1 rounded bg-[#FFC928] text-[#08090C] text-[10px] font-bold"
+                          >
+                            + Add New Partner
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {partners.map(p => (
+                            <div key={p.id} className="p-3.5 rounded-xl bg-[#08090C] border border-white/[0.08] space-y-2 text-xs">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-7 h-7 rounded-lg bg-[#15171D] border border-white/10 flex items-center justify-center p-0.5">
+                                    {p.logo ? <img src={p.logo} className="w-full h-full object-contain" /> : <span className="font-bold text-[#FFC928]">{p.name[0]}</span>}
+                                  </div>
+                                  <span className="font-bold text-white text-sm">{p.name}</span>
+                                  <span className="text-[10px] text-[#FFC928] font-semibold">({p.commissionInfo})</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-zinc-400 text-[11px]">Clicks: <strong className="text-[#FFC928] font-bold">{p.clickCount}</strong></span>
+                                  <button 
+                                    onClick={() => setPartners(prev => prev.map(item => item.id === p.id ? { ...item, clickCount: 0 } : item))} 
+                                    className="p-1 text-zinc-500 hover:text-white" 
+                                    title="Reset Clicks"
+                                  >
+                                    <Icons.Refresh />
+                                  </button>
+                                  <button 
+                                    onClick={() => setPartners(prev => prev.filter(item => item.id !== p.id))} 
+                                    className="p-1 text-rose-400 hover:text-rose-300"
+                                    title="Delete Partner"
+                                  >
+                                    <Icons.Trash />
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="text-[10px] text-zinc-400 font-semibold block mb-0.5">Exact Affiliate URL (Paste your affiliate link here):</label>
+                                <div className="flex items-center gap-1.5">
+                                  <input 
+                                    type="text" 
+                                    value={p.affiliateUrl} 
+                                    onChange={e => {
+                                      const val = e.target.value;
+                                      setPartners(prev => prev.map(item => item.id === p.id ? { ...item, affiliateUrl: val } : item));
+                                    }}
+                                    className="flex-1 px-2.5 py-1.5 rounded-lg bg-[#15171D] border border-[#FFC928]/30 text-[11px] font-mono text-[#FFC928]" 
+                                  />
+                                  <button 
+                                    onClick={() => openAffiliateLink(p.affiliateUrl, p.name, p.id)}
+                                    className="px-2.5 py-1.5 rounded-lg bg-[#252833] text-zinc-200 hover:text-white text-[11px] font-bold flex items-center gap-1 shrink-0"
+                                    title="Test Outbound Affiliate URL in Custom Tab"
+                                  >
+                                    <span>Test</span>
+                                    <Icons.ExternalLink />
+                                  </button>
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <button
-                                onClick={() => handleRefreshOfferPrice(o.id, o.affiliateUrl)}
-                                className="px-2.5 py-1.5 rounded-lg bg-[#FFC928]/15 border border-[#FFC928]/40 text-[#FFC928] font-bold text-[10px] flex items-center gap-1"
-                              >
-                                <Icons.Refresh /> Sync Price
-                              </button>
-                              <button
-                                onClick={() => setOffers(prev => prev.filter(item => item.id !== o.id))}
-                                className="p-1.5 rounded-lg bg-rose-500/15 text-rose-400 hover:bg-rose-500/30"
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ========================================================== */}
+                    {/* MODULE 3: PRODUCT & OFFERS MANAGEMENT                      */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 3 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.Tag /> Product & Offer Deals ({offers.length})</h3>
+                          <button 
+                            onClick={() => {
+                              const title = prompt('Product Name:');
+                              const partner = prompt('Partner Name (Amazon, Flipkart, etc.):', 'Amazon India');
+                              const discPrice = prompt('Discounted Price (₹):', '999');
+                              const url = prompt('Affiliate URL:');
+                              if (title && discPrice && url) {
+                                setOffers(prev => [{
+                                  id: 'offer_' + Date.now(),
+                                  title,
+                                  description: 'Hot deal with top affiliate cash reward',
+                                  imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
+                                  partnerId: 'partner_custom',
+                                  partnerName: partner || 'Amazon India',
+                                  originalPrice: Number(discPrice) * 1.4,
+                                  discountedPrice: Number(discPrice),
+                                  discountPercent: 28,
+                                  commissionRate: '7.5%',
+                                  affiliateUrl: url,
+                                  category: 'Deals',
+                                  isTrending: true,
+                                  isBestDeal: true,
+                                  status: 'active'
+                                }, ...prev]);
+                                alert('New offer published!');
+                              }
+                            }}
+                            className="px-2.5 py-1 rounded bg-[#FFC928] text-[#08090C] text-[10px] font-bold"
+                          >
+                            + Add New Product Deal
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {offers.map(o => (
+                            <div key={o.id} className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08] flex items-center justify-between gap-3 text-xs">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <img src={o.imageUrl} className="w-10 h-10 rounded-lg object-cover" />
+                                <div className="truncate">
+                                  <span className="font-bold text-white block truncate">{o.title}</span>
+                                  <span className="text-[10px] text-zinc-400">{o.partnerName} • {settings.currency}{o.discountedPrice} • Commission: <strong className="text-[#FFC928]">{o.commissionRate}</strong></span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button 
+                                  onClick={() => {
+                                    const newPrice = prompt('Enter new discounted price (₹):', o.discountedPrice);
+                                    if (newPrice) {
+                                      setOffers(prev => prev.map(item => item.id === o.id ? { ...item, discountedPrice: Number(newPrice) } : item));
+                                    }
+                                  }}
+                                  className="p-1.5 rounded bg-[#252833] text-zinc-300 hover:text-white"
+                                  title="Edit Price"
+                                >
+                                  <Icons.Edit />
+                                </button>
+                                <button 
+                                  onClick={() => setOffers(prev => prev.filter(item => item.id !== o.id))}
+                                  className="p-1.5 rounded bg-rose-500/20 text-rose-400"
+                                  title="Delete Offer"
+                                >
+                                  <Icons.Trash />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ========================================================== */}
+                    {/* MODULE 4: BANNER CAROUSEL MANAGEMENT                       */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 4 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.Image /> Promotional Banner Carousel</h3>
+                          <button 
+                            onClick={() => {
+                              const title = prompt('Banner Headline:');
+                              const sub = prompt('Subtitle Promo text:');
+                              const img = prompt('Image URL:', 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800');
+                              const url = prompt('Target Affiliate Link:');
+                              if (title && url) {
+                                setBanners(prev => [...prev, {
+                                  id: 'b_' + Date.now(),
+                                  title,
+                                  subtitle: sub || 'Exclusive festive deals',
+                                  imageUrl: img || 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800',
+                                  affiliateUrl: url,
+                                  status: 'active'
+                                }]);
+                                alert('New promotional banner live!');
+                              }
+                            }}
+                            className="px-2.5 py-1 rounded bg-[#FFC928] text-[#08090C] text-[10px] font-bold"
+                          >
+                            + Add New Banner
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          {banners.map(b => (
+                            <div key={b.id} className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08] flex items-center justify-between gap-3 text-xs">
+                              <div className="flex items-center gap-3">
+                                <img src={b.imageUrl} className="w-16 h-10 rounded-lg object-cover" />
+                                <div>
+                                  <span className="font-bold text-white block">{b.title}</span>
+                                  <span className="text-[10px] text-zinc-400 block">{b.subtitle}</span>
+                                  <span className="text-[9px] font-mono text-[#FFC928] truncate block max-w-xs">{b.affiliateUrl}</span>
+                                </div>
+                              </div>
+
+                              <button 
+                                onClick={() => setBanners(prev => prev.filter(item => item.id !== b.id))}
+                                className="p-1.5 rounded bg-rose-500/20 text-rose-400"
                               >
                                 <Icons.Trash />
                               </button>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* Partner Management */}
-                    <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-sm text-white">Partner Stores (Dynamic URLs)</h3>
+                    {/* ========================================================== */}
+                    {/* MODULE 5: REFERRAL REWARD SYSTEM                           */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 5 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.Gift /> Referral Reward Configuration</h3>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08]">
+                            <label className="text-[10px] text-zinc-400 block mb-1">Referrer Reward ({settings.currency})</label>
+                            <input 
+                              type="number" 
+                              value={settings.referralBonus} 
+                              onChange={e => setSettings(prev => ({ ...prev, referralBonus: Number(e.target.value) }))}
+                              className="w-full px-2 py-1.5 rounded bg-[#15171D] text-white text-xs font-bold border border-white/10"
+                            />
+                            <span className="text-[9px] text-zinc-500 mt-1 block">Paid to user when friend joins</span>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08]">
+                            <label className="text-[10px] text-zinc-400 block mb-1">Referee Welcome Bonus ({settings.currency})</label>
+                            <input 
+                              type="number" 
+                              value={settings.welcomeBonus} 
+                              onChange={e => setSettings(prev => ({ ...prev, welcomeBonus: Number(e.target.value) }))}
+                              className="w-full px-2 py-1.5 rounded bg-[#15171D] text-white text-xs font-bold border border-white/10"
+                            />
+                            <span className="text-[9px] text-zinc-500 mt-1 block">Credited to new signup wallet</span>
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08]">
+                            <label className="text-[10px] text-zinc-400 block mb-1">Min Withdrawal Limit ({settings.currency})</label>
+                            <input 
+                              type="number" 
+                              value={settings.minWithdrawal} 
+                              onChange={e => setSettings(prev => ({ ...prev, minWithdrawal: Number(e.target.value) }))}
+                              className="w-full px-2 py-1.5 rounded bg-[#15171D] text-white text-xs font-bold border border-white/10"
+                            />
+                            <span className="text-[9px] text-zinc-500 mt-1 block">Threshold to request UPI payout</span>
+                          </div>
+                        </div>
+
                         <button 
                           onClick={() => {
-                            const name = prompt('Partner Name (e.g. Croma):');
-                            const url = prompt('Exact Affiliate URL:');
-                            if (name && url) {
-                              setPartners(prev => [...prev, { id: 'p_' + Date.now(), name, affiliateUrl: url, commissionInfo: 'Up to 10%', logo: '', description: 'Partner network', clickCount: 0 }]);
-                            }
+                            triggerConfetti();
+                            alert('Referral rules updated & applied successfully!');
                           }}
-                          className="px-2 py-1 rounded bg-[#FFC928] text-[#08090C] text-[10px] font-bold"
+                          className="px-4 py-2 rounded-xl bg-[#FFC928] text-[#08090C] text-xs font-bold"
                         >
-                          + Add Partner
+                          Save Referral Rules
                         </button>
                       </div>
+                    )}
 
-                      <div className="space-y-2">
-                        {partners.map(p => (
-                          <div key={p.id} className="p-2.5 rounded-xl bg-[#08090C] border border-white/[0.08] space-y-1 text-xs">
-                            <div className="flex justify-between font-bold text-white">
-                              <span>{p.name}</span>
-                              <span className="text-[#FFC928]">{p.clickCount} Clicks</span>
+                    {/* ========================================================== */}
+                    {/* MODULE 6: EARNINGS LEDGER                                  */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 6 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.TrendingUp /> Commissions & Earning Ledger</h3>
+                          <button 
+                            onClick={() => {
+                              const amt = prompt('Commission Amount (₹):', '500');
+                              const reason = prompt('Reason / Order ID:', 'Verified purchase bonus');
+                              if (amt) {
+                                const nc = {
+                                  id: 'c_' + Date.now(),
+                                  userId: currentUser.id,
+                                  userName: currentUser.name,
+                                  partnerName: 'Amazon India',
+                                  amount: Number(amt),
+                                  reason: reason || 'Manual credit',
+                                  status: 'approved',
+                                  date: 'Just now'
+                                };
+                                setCommissions(prev => [nc, ...prev]);
+                                setCurrentUser(prev => ({ ...prev, walletBalance: prev.walletBalance + Number(amt), totalEarnings: prev.totalEarnings + Number(amt) }));
+                                setUsers(prev => prev.map(u => u.id === currentUser.id ? { ...u, walletBalance: u.walletBalance + Number(amt), totalEarnings: u.totalEarnings + Number(amt) } : u));
+                                triggerConfetti();
+                                alert('Manual commission credited directly to user wallet!');
+                              }
+                            }}
+                            className="px-2.5 py-1 rounded bg-[#FFC928] text-[#08090C] text-[10px] font-bold"
+                          >
+                            + Manual Credit Commission
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {commissions.map(c => (
+                            <div key={c.id} className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08] flex items-center justify-between text-xs">
+                              <div>
+                                <span className="font-bold text-white block">{c.reason}</span>
+                                <span className="text-[10px] text-zinc-400">User: <strong className="text-zinc-200">{c.userName}</strong> • {c.partnerName} • {c.date}</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="font-bold text-[#FFC928] block">+{settings.currency}{c.amount.toLocaleString()}</span>
+                                <span className={'text-[9px] font-bold uppercase ' + (c.status === 'approved' ? 'text-emerald-400' : 'text-amber-400')}>{c.status}</span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <input 
-                                type="text" 
-                                value={p.affiliateUrl} 
-                                onChange={e => {
-                                  const val = e.target.value;
-                                  setPartners(prev => prev.map(item => item.id === p.id ? { ...item, affiliateUrl: val } : item));
-                                }}
-                                className="flex-1 px-2 py-1 rounded bg-[#15171D] border border-white/10 text-[10px] font-mono text-[#FFC928]"
-                              />
-                              <button 
-                                onClick={() => setPartners(prev => prev.filter(item => item.id !== p.id))}
-                                className="text-rose-400 p-1"
-                              >
-                                <Icons.Trash />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* ========================================================== */}
+                    {/* MODULE 7: WITHDRAWAL DESK                                  */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 7 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.Wallet /> Withdrawal Approval Desk</h3>
+                        
+                        <div className="space-y-3">
+                          {withdrawals.map(w => (
+                            <div key={w.id} className="p-3.5 rounded-xl bg-[#08090C] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-white text-sm">{settings.currency}{w.amount.toLocaleString()}</span>
+                                  <span className={'px-1.5 py-0.2 rounded text-[9px] font-bold uppercase ' + (w.status === 'paid' ? 'bg-emerald-500/20 text-emerald-400' : w.status === 'pending' ? 'bg-amber-500/20 text-amber-400' : 'bg-rose-500/20 text-rose-400')}>
+                                    {w.status}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] text-zinc-400 font-mono block mt-0.5">User: {w.userName} • {w.method}: {w.details}</span>
+                                <span className="text-[9px] text-zinc-500">{w.date}</span>
+                              </div>
+
+                              {w.status === 'pending' && (
+                                <div className="flex items-center gap-2">
+                                  <button 
+                                    onClick={() => {
+                                      setWithdrawals(prev => prev.map(item => item.id === w.id ? { ...item, status: 'paid' } : item));
+                                      setCurrentUser(prev => ({ ...prev, pendingBalance: Math.max(0, prev.pendingBalance - w.amount) }));
+                                      setUsers(prev => prev.map(u => u.id === w.userId ? { ...u, pendingBalance: Math.max(0, u.pendingBalance - w.amount) } : u));
+                                      triggerConfetti();
+                                      alert('Withdrawal marked as PAID! Balance updated.');
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg bg-emerald-500 text-[#08090C] font-bold text-xs"
+                                  >
+                                    Approve & Pay
+                                  </button>
+                                  <button 
+                                    onClick={() => {
+                                      setWithdrawals(prev => prev.map(item => item.id === w.id ? { ...item, status: 'rejected' } : item));
+                                      setCurrentUser(prev => ({ ...prev, walletBalance: prev.walletBalance + w.amount, pendingBalance: Math.max(0, prev.pendingBalance - w.amount) }));
+                                      setUsers(prev => prev.map(u => u.id === w.userId ? { ...u, walletBalance: u.walletBalance + w.amount, pendingBalance: Math.max(0, u.pendingBalance - w.amount) } : u));
+                                      alert('Withdrawal rejected. Funds refunded to user wallet.');
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-400 font-bold text-xs"
+                                  >
+                                    Reject & Refund
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ========================================================== */}
+                    {/* MODULE 8: NOTIFICATION BROADCASTER                         */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 8 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.Bell /> Broadcast Push Notification to All Users</h3>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-[11px] text-zinc-400 block mb-1">Notification Title</label>
+                            <input id="notifTitle" type="text" placeholder="e.g. Mega Weekend Cashback!" className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs" />
+                          </div>
+                          <div>
+                            <label className="text-[11px] text-zinc-400 block mb-1">Message Body</label>
+                            <textarea id="notifMsg" rows="3" placeholder="e.g. Earn flat 12% on Myntra fashion deals for the next 24 hours." className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs" />
+                          </div>
+                          <button 
+                            onClick={() => {
+                              const t = document.getElementById('notifTitle').value;
+                              const m = document.getElementById('notifMsg').value;
+                              if (t && m) {
+                                setNotifications(prev => [{ id: 'n_' + Date.now(), title: t, message: m, date: 'Just now' }, ...prev]);
+                                triggerConfetti();
+                                alert('Notification sent to all active users!');
+                                document.getElementById('notifTitle').value = '';
+                                document.getElementById('notifMsg').value = '';
+                              } else {
+                                alert('Please enter both title and message.');
+                              }
+                            }}
+                            className="px-4 py-2 rounded-xl bg-[#FFC928] text-[#08090C] text-xs font-bold"
+                          >
+                            Send Broadcast Notification
+                          </button>
+                        </div>
+
+                        <div className="space-y-2 pt-2 border-t border-white/[0.08]">
+                          <h4 className="text-xs font-bold text-zinc-300">Sent Notification History</h4>
+                          {notifications.map(n => (
+                            <div key={n.id} className="p-2.5 rounded-xl bg-[#08090C] border border-white/[0.06] text-xs flex justify-between items-start">
+                              <div>
+                                <strong className="text-white block">{n.title}</strong>
+                                <p className="text-zinc-400 text-[11px]">{n.message}</p>
+                              </div>
+                              <span className="text-[9px] text-zinc-500 shrink-0">{n.date}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ========================================================== */}
+                    {/* MODULE 9: HOME LAYOUT MANAGER                              */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 9 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.Layout /> Home Screen Section Visibility</h3>
+                        
+                        <div className="space-y-3">
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08] flex items-center justify-between">
+                            <div>
+                              <strong className="text-white text-xs block">Promotional Campaign Banner</strong>
+                              <span className="text-[10px] text-zinc-400">Hero banner at the top of homepage</span>
+                            </div>
+                            <input 
+                              type="checkbox" 
+                              checked={settings.showBanner} 
+                              onChange={e => setSettings(prev => ({ ...prev, showBanner: e.target.checked }))}
+                              className="w-5 h-5 accent-[#FFC928] cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08] flex items-center justify-between">
+                            <div>
+                              <strong className="text-white text-xs block">Category Filter Pills</strong>
+                              <span className="text-[10px] text-zinc-400">Top Offers, Trending, Best Deals pills</span>
+                            </div>
+                            <input 
+                              type="checkbox" 
+                              checked={settings.showCategoryPills} 
+                              onChange={e => setSettings(prev => ({ ...prev, showCategoryPills: e.target.checked }))}
+                              className="w-5 h-5 accent-[#FFC928] cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08] flex items-center justify-between">
+                            <div>
+                              <strong className="text-white text-xs block">Featured Offers Grid (Amazon, Flipkart, Myntra, Ajio)</strong>
+                              <span className="text-[10px] text-zinc-400">Merchant logos and commission rates</span>
+                            </div>
+                            <input 
+                              type="checkbox" 
+                              checked={settings.showFeaturedOffers} 
+                              onChange={e => setSettings(prev => ({ ...prev, showFeaturedOffers: e.target.checked }))}
+                              className="w-5 h-5 accent-[#FFC928] cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08] flex items-center justify-between">
+                            <div>
+                              <strong className="text-white text-xs block">All Products & Deals Section</strong>
+                              <span className="text-[10px] text-zinc-400">Product cards at bottom of homepage</span>
+                            </div>
+                            <input 
+                              type="checkbox" 
+                              checked={settings.showAllProducts} 
+                              onChange={e => setSettings(prev => ({ ...prev, showAllProducts: e.target.checked }))}
+                              className="w-5 h-5 accent-[#FFC928] cursor-pointer"
+                            />
+                          </div>
+                        </div>
+
+                        <p className="text-[11px] text-zinc-400">Changes take effect immediately on the homepage without needing a restart.</p>
+                      </div>
+                    )}
+
+                    {/* ========================================================== */}
+                    {/* MODULE 10: APP SETTINGS                                    */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 10 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.Settings /> General App Settings</h3>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[10px] text-zinc-400 block mb-1">App Name</label>
+                            <input 
+                              type="text" 
+                              value={settings.appName} 
+                              onChange={e => setSettings(prev => ({ ...prev, appName: e.target.value }))}
+                              className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-zinc-400 block mb-1">Tagline</label>
+                            <input 
+                              type="text" 
+                              value={settings.tagline} 
+                              onChange={e => setSettings(prev => ({ ...prev, tagline: e.target.value }))}
+                              className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-zinc-400 block mb-1">Support Email</label>
+                            <input 
+                              type="text" 
+                              value={settings.supportEmail} 
+                              onChange={e => setSettings(prev => ({ ...prev, supportEmail: e.target.value }))}
+                              className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-zinc-400 block mb-1">Currency Symbol</label>
+                            <input 
+                              type="text" 
+                              value={settings.currency} 
+                              onChange={e => setSettings(prev => ({ ...prev, currency: e.target.value }))}
+                              className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs font-bold"
+                            />
+                          </div>
+                        </div>
+
+                        <button 
+                          onClick={() => {
+                            triggerConfetti();
+                            alert('App branding & settings saved successfully!');
+                          }}
+                          className="px-4 py-2 rounded-xl bg-[#FFC928] text-[#08090C] text-xs font-bold"
+                        >
+                          Save Settings
+                        </button>
+                      </div>
+                    )}
+
+                    {/* ========================================================== */}
+                    {/* MODULE 11: ANALYTICS & TRAFFIC                             */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 11 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.BarChart /> Outbound Traffic & Affiliate Analytics</h3>
+                        
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08]">
+                            <span className="text-[10px] text-zinc-400 block font-medium">Total Clicks</span>
+                            <span className="text-xl font-extrabold text-white font-display">
+                              {partners.reduce((s, p) => s + p.clickCount, 0)}
+                            </span>
+                          </div>
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08]">
+                            <span className="text-[10px] text-zinc-400 block font-medium">Est. Conversion</span>
+                            <span className="text-xl font-extrabold text-emerald-400 font-display">
+                              3.4%
+                            </span>
+                          </div>
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08]">
+                            <span className="text-[10px] text-zinc-400 block font-medium">Total Payouts</span>
+                            <span className="text-xl font-extrabold text-[#FFC928] font-display">
+                              {settings.currency}{withdrawals.filter(w => w.status === 'paid').reduce((s, w) => s + w.amount, 0).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="p-3 rounded-xl bg-[#08090C] border border-white/[0.08]">
+                            <span className="text-[10px] text-zinc-400 block font-medium">Active Partners</span>
+                            <span className="text-xl font-extrabold text-white font-display">
+                              {partners.length}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Partner Click Breakdown Bar Chart */}
+                        <div className="p-4 rounded-xl bg-[#08090C] border border-white/[0.08] space-y-3">
+                          <h4 className="text-xs font-bold text-white">Click Distribution by Merchant</h4>
+                          {partners.map(p => {
+                            const totalC = Math.max(1, partners.reduce((s, x) => s + x.clickCount, 0));
+                            const pct = Math.round((p.clickCount / totalC) * 100);
+                            return (
+                              <div key={p.id} className="space-y-1">
+                                <div className="flex justify-between text-[11px]">
+                                  <span className="text-white font-semibold">{p.name}</span>
+                                  <span className="text-[#FFC928] font-bold">{p.clickCount} clicks ({pct}%)</span>
+                                </div>
+                                <div className="w-full h-2 rounded-full bg-[#15171D] overflow-hidden">
+                                  <div className="h-full bg-gradient-to-r from-[#FFC928] to-[#D99B16] rounded-full" style={{ width: pct + '%' }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ========================================================== */}
+                    {/* MODULE 12: SECURITY AUDITED & LOGS                         */}
+                    {/* ========================================================== */}
+                    {adminSubTab === 12 && (
+                      <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-4">
+                        <h3 className="font-bold text-sm text-white flex items-center gap-2"><Icons.Shield /> Security Audit Trail & Access Logs</h3>
+                        
+                        <div className="p-3.5 rounded-xl bg-[#08090C] border border-[#FFC928]/30 space-y-3">
+                          <h4 className="text-xs font-bold text-white">Change Admin Gateway Password</h4>
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="text" 
+                              value={adminPassword} 
+                              onChange={e => setAdminPassword(e.target.value)} 
+                              className="px-3 py-1.5 rounded-lg bg-[#15171D] border border-white/10 text-xs font-mono text-[#FFC928]" 
+                            />
+                            <button 
+                              onClick={() => {
+                                alert('Admin password updated to: ' + adminPassword);
+                              }}
+                              className="px-3 py-1.5 rounded-lg bg-[#FFC928] text-[#08090C] text-xs font-bold"
+                            >
+                              Update Password
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="text-xs font-bold text-white">Security Events & Audit Logs</h4>
+                          {auditLogs.map(a => (
+                            <div key={a.id} className="p-2.5 rounded-xl bg-[#08090C] border border-white/[0.06] flex items-center justify-between text-xs">
+                              <div>
+                                <strong className="text-white block">{a.action}</strong>
+                                <span className="text-[10px] text-zinc-400 font-mono">{a.details}</span>
+                              </div>
+                              <span className="text-[9px] text-zinc-500 font-mono shrink-0">{a.timestamp}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 )}
+
               </main>
 
               {/* Fixed 5-Item Bottom Navigation Bar */}
-              <nav className="fixed bottom-0 left-0 right-0 max-w-7xl mx-auto h-16 bg-[#08090C]/95 backdrop-blur-md border-t border-white/[0.08] flex items-center justify-around px-2 z-40">
+              <nav className="absolute bottom-0 left-0 right-0 h-16 bg-[#08090C]/95 backdrop-blur-md border-t border-white/[0.08] flex items-center justify-around px-2 z-40">
                 <button onClick={() => setActiveTab('home')} className={'flex flex-col items-center ' + (activeTab === 'home' ? 'text-[#FFC928]' : 'text-zinc-500')}>
                   <Icons.Home />
                   <span className="text-[9px] font-bold mt-1">Home</span>
@@ -1143,6 +1603,7 @@
                   <Icons.TrendingUp />
                   <span className="text-[9px] font-bold mt-1">Earnings</span>
                 </button>
+                {/* Center Elevated WALLET Button with Golden Glow */}
                 <div className="-mt-6">
                   <button onClick={() => setActiveTab('wallet')} className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#8C6207] via-[#FFC928] to-[#FFF2B2] p-[2px] shadow-lg shadow-[#FFC928]/40 flex items-center justify-center">
                     <div className={'w-full h-full rounded-full flex items-center justify-center text-[#FFC928] ' + (activeTab === 'wallet' ? 'bg-[#1C1F27]' : 'bg-[#15171D]')}>
@@ -1163,7 +1624,7 @@
             </div>
           </div>
 
-          {/* Outbound Link Redirect Modal */}
+          {/* Android Custom Tabs Simulator Modal */}
           {customTab.open && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
               <div className="w-full max-w-md bg-[#121419] rounded-2xl border border-white/10 overflow-hidden shadow-2xl p-4 text-center space-y-4">
@@ -1172,11 +1633,11 @@
                   <button onClick={() => setCustomTab({ open: false, url: '', title: '' })} className="text-zinc-400 hover:text-white"><Icons.X /></button>
                 </div>
                 <div className="p-3 bg-[#08090C] rounded-xl text-left border border-[#FFC928]/30">
-                  <span className="text-[10px] text-zinc-400 uppercase font-semibold">Your Active Commission Link:</span>
+                  <span className="text-[10px] text-zinc-400 uppercase font-semibold">Exact Admin Affiliate URL:</span>
                   <p className="text-xs font-mono text-[#FFC928] break-all mt-1">{customTab.url}</p>
                 </div>
                 <button onClick={() => window.open(customTab.url, '_blank')} className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs">
-                  Continue to Store & Buy
+                  Continue to Merchant Website
                 </button>
               </div>
             </div>
@@ -1190,14 +1651,20 @@
                   <h3 className="font-bold text-white text-base">Secret Admin Gateway</h3>
                   <button onClick={() => setShowAdminLogin(false)} className="text-zinc-400"><Icons.X /></button>
                 </div>
-                <p className="text-xs text-zinc-400">Enter password to unlock EarnKaro Auto-Fetch Admin Panel.</p>
-                <input id="adminPass" type="password" defaultValue="Admin@2026" className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs" />
+                <p className="text-xs text-zinc-400">Triple tap detected. Enter password to unlock 12-Module Admin Console.</p>
+                <input id="adminPassInput" type="password" defaultValue={adminPassword} className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs" />
                 <button 
                   onClick={() => {
-                    setIsAdmin(true);
-                    setShowAdminLogin(false);
-                    setActiveTab('admin');
-                    if (window.confetti) confetti();
+                    const entered = document.getElementById('adminPassInput').value;
+                    if (entered === adminPassword) {
+                      setIsAdmin(true);
+                      setShowAdminLogin(false);
+                      setActiveTab('admin');
+                      setAuditLogs(prev => [{ id: 'a_' + Date.now(), action: 'Admin Authorized', details: 'Access granted to 12 modules', timestamp: new Date().toLocaleString() }, ...prev]);
+                      triggerConfetti();
+                    } else {
+                      alert('Incorrect Admin Password!');
+                    }
                   }}
                   className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs"
                 >
@@ -1211,15 +1678,15 @@
           {showShareModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
               <div className="w-full max-w-sm bg-[#15171D] rounded-2xl border border-white/10 p-6 shadow-2xl space-y-4 text-center">
-                <h3 className="font-bold text-white text-lg">Invite & Earn ₹250</h3>
-                <p className="text-xs text-zinc-400">Share your referral code. Friends get ₹100 welcome bonus on joining!</p>
+                <h3 className="font-bold text-white text-lg">Invite & Earn {settings.currency}{settings.referralBonus}</h3>
+                <p className="text-xs text-zinc-400">Share your referral code. Friends get {settings.currency}{settings.welcomeBonus} welcome bonus on joining!</p>
                 <div className="p-3 rounded-xl bg-[#08090C] border border-[#FFC928]/40 font-mono text-base font-bold text-[#FFC928]">
                   {currentUser.referralCode}
                 </div>
                 <button 
                   onClick={() => {
                     navigator.clipboard.writeText(currentUser.referralCode);
-                    if (window.confetti) confetti();
+                    triggerConfetti();
                     alert('Referral code copied to clipboard!');
                     setShowShareModal(false);
                   }}
@@ -1235,20 +1702,18 @@
           {selectedOffer && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
               <div className="w-full max-w-sm bg-[#15171D] rounded-2xl border border-white/10 overflow-hidden shadow-2xl space-y-3 p-4">
-                <div className="h-44 bg-white rounded-xl flex items-center justify-center p-2">
-                  <img src={selectedOffer.imageUrl} className="max-h-full max-w-full object-contain" />
-                </div>
-                <div className="flex items-start justify-between gap-2 text-xs font-bold">
+                <img src={selectedOffer.imageUrl} className="w-full h-40 object-cover rounded-xl" />
+                <div className="flex items-center justify-between text-xs font-bold">
                   <span className="text-white">{selectedOffer.title}</span>
-                  <button onClick={() => setSelectedOffer(null)} className="text-zinc-400 shrink-0"><Icons.X /></button>
+                  <button onClick={() => setSelectedOffer(null)} className="text-zinc-400"><Icons.X /></button>
                 </div>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-lg font-extrabold text-white">₹{Number(selectedOffer.discountedPrice).toLocaleString()}</span>
+                  <span className="text-lg font-extrabold text-white">{settings.currency}{selectedOffer.discountedPrice.toLocaleString()}</span>
                   <span className="text-xs font-bold text-[#FFC928]">You Earn: {selectedOffer.commissionRate}</span>
                 </div>
                 <button 
                   onClick={() => {
-                    openAffiliateLink(selectedOffer.affiliateUrl, selectedOffer.title, selectedOffer.partnerId);
+                    openAffiliateLink(selectedOffer.affiliateUrl, selectedOffer.title, selectedOffer.partnerId, selectedOffer.id);
                     setSelectedOffer(null);
                   }}
                   className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs"
