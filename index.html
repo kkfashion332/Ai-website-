@@ -1,970 +1,827 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KK FASHION | Your Style. Your Rules.</title>
-
-<!-- Three.js and GSAP -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-:root {
-  --gold: #d6ad55;
-  --black: #080808;
-  --panel: #111111;
-  --muted: #999;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--black);
-  color: white;
-  font-family: 'Inter', sans-serif;
-  overflow-x: hidden;
-}
-
-button, input { font: inherit; }
-
-button { cursor: pointer; }
-
-a { color: inherit; text-decoration: none; }
-
-/* NAVBAR */
-nav {
-  height: 78px;
-  padding: 0 7%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(8,8,8,.92);
-  border-bottom: 1px solid #29231a;
-  position: fixed;
-  width: 100%;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(15px);
-}
-
-.logo {
-  font-family: Orbitron, sans-serif;
-  color: var(--gold);
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 3px;
-}
-
-.logo span { color: white; }
-
-.nav-links {
-  display: flex;
-  gap: 30px;
-  list-style: none;
-  font-size: 12px;
-  letter-spacing: 1.5px;
-}
-
-.nav-links a:hover { color: var(--gold); }
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.nav-actions button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 20px;
-}
-
-.cart-count {
-  color: var(--gold);
-  font-size: 12px;
-  margin-left: 3px;
-}
-
-/* HERO */
-.hero {
-  min-height: 100vh;
-  padding: 120px 8% 60px;
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(ellipse at 75% 50%, #44351b 0%, transparent 45%),
-    linear-gradient(120deg, #080808, #111 60%, #080808);
-}
-
-.hero::before {
-  content: "";
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  border: 1px solid rgba(214,173,85,.12);
-  border-radius: 50%;
-  right: 10%;
-  top: 15%;
-  box-shadow: 0 0 100px rgba(214,173,85,.08);
-}
-
-.hero-content { z-index: 2; }
-
-.eyebrow {
-  color: var(--gold);
-  letter-spacing: 5px;
-  font-size: 11px;
-  margin-bottom: 25px;
-}
-
-.hero h1 {
-  font-family: Orbitron, sans-serif;
-  font-size: clamp(42px, 6vw, 82px);
-  line-height: 1.1;
-  margin-bottom: 25px;
-}
-
-.hero h1 span {
-  color: var(--gold);
-  text-shadow: 0 0 35px #a8792c66;
-}
-
-.hero p {
-  color: #aaa;
-  line-height: 1.8;
-  max-width: 430px;
-  font-size: 14px;
-  margin-bottom: 35px;
-}
-
-.gold-btn {
-  display: inline-block;
-  background: linear-gradient(110deg, #a77b2e, #f0d28a, #a77b2e);
-  color: #090909;
-  padding: 15px 32px;
-  border: none;
-  font-weight: 800;
-  letter-spacing: 1px;
-  transition: .3s;
-}
-
-.gold-btn:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px #d6ad5544;
-}
-
-.hero-visual {
-  height: 520px;
-  position: relative;
-  z-index: 1;
-}
-
-#three-scene {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.hero-label {
-  position: absolute;
-  bottom: 35px;
-  right: 5%;
-  color: var(--gold);
-  font-family: Orbitron;
-  font-size: 11px;
-  letter-spacing: 3px;
-}
-
-/* COMMON SECTIONS */
-section { padding: 100px 8%; }
-
-.section-heading {
-  text-align: center;
-  margin-bottom: 55px;
-}
-
-.section-heading small {
-  color: var(--gold);
-  letter-spacing: 4px;
-  font-size: 10px;
-}
-
-.section-heading h2 {
-  font-family: Orbitron;
-  font-size: clamp(25px, 4vw, 40px);
-  margin-top: 15px;
-}
-
-.section-heading p {
-  color: var(--muted);
-  margin-top: 12px;
-  font-size: 13px;
-}
-
-/* CATEGORIES */
-.categories {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 15px;
-}
-
-.category {
-  height: 210px;
-  background: linear-gradient(145deg, #252017, #111);
-  border: 1px solid #342d20;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 22px;
-  transition: .35s;
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.category::before {
-  content: "KK";
-  position: absolute;
-  font-family: Orbitron;
-  font-size: 90px;
-  color: #d6ad5511;
-  top: 25px;
-  right: 10px;
-}
-
-.category:hover {
-  transform: translateY(-8px);
-  border-color: var(--gold);
-}
-
-.category h3 {
-  color: var(--gold);
-  font-size: 15px;
-  position: relative;
-}
-
-.category span {
-  color: #999;
-  font-size: 10px;
-  margin-top: 7px;
-  position: relative;
-}
-
-/* PRODUCTS */
-.shop { background: #0d0d0d; }
-
-.shop-tools {
-  display: flex;
-  justify-content: space-between;
-  gap: 15px;
-  flex-wrap: wrap;
-  margin-bottom: 30px;
-}
-
-.filters {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.filter-btn {
-  background: #171717;
-  color: #bbb;
-  border: 1px solid #333;
-  padding: 10px 17px;
-  font-size: 11px;
-}
-
-.filter-btn.active,
-.filter-btn:hover {
-  color: #080808;
-  background: var(--gold);
-  border-color: var(--gold);
-}
-
-.search-box {
-  background: #171717;
-  color: white;
-  border: 1px solid #333;
-  padding: 11px 15px;
-  outline: none;
-  min-width: 190px;
-}
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
-}
-
-.product-card {
-  background: #151515;
-  border: 1px solid #292929;
-  transition: .3s;
-  overflow: hidden;
-}
-
-.product-card:hover {
-  transform: translateY(-7px);
-  border-color: #9d793d;
-}
-
-.product-image {
-  height: 260px;
-  background: radial-gradient(circle, #393024, #171411 70%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: .5s;
-}
-
-.product-card:hover .product-image img {
-  transform: scale(1.08);
-}
-
-.product-placeholder {
-  font-family: Orbitron;
-  font-size: 30px;
-  color: #d6ad5580;
-  letter-spacing: 4px;
-}
-
-.product-info { padding: 18px; }
-
-.product-info small {
-  color: var(--gold);
-  font-size: 9px;
-  letter-spacing: 2px;
-}
-
-.product-info h3 {
-  font-size: 14px;
-  margin: 10px 0;
-}
-
-.price {
-  color: var(--gold);
-  font-weight: 700;
-  font-size: 15px;
-}
-
-.old-price {
-  color: #777;
-  text-decoration: line-through;
-  font-size: 11px;
-  margin-left: 8px;
-}
-
-.add-btn {
-  width: 100%;
-  background: transparent;
-  border: 1px solid #806333;
-  color: var(--gold);
-  padding: 12px;
-  margin-top: 17px;
-  font-size: 11px;
-  letter-spacing: 1px;
-}
-
-.add-btn:hover {
-  background: var(--gold);
-  color: #080808;
-}
-
-/* CAMPAIGN */
-.campaign {
-  text-align: center;
-  background:
-    radial-gradient(ellipse at center, #46351d, #100e0a 65%);
-  border-top: 1px solid #302718;
-  border-bottom: 1px solid #302718;
-}
-
-.campaign h2 {
-  font-family: Orbitron;
-  font-size: clamp(30px, 6vw, 65px);
-  color: var(--gold);
-  margin: 20px 0;
-}
-
-.campaign p {
-  color: #aaa;
-  margin-bottom: 30px;
-  font-size: 13px;
-}
-
-/* FOOTER */
-footer {
-  padding: 65px 8% 25px;
-  background: #050505;
-}
-
-.footer-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 40px;
-}
-
-.footer-grid h3 {
-  color: var(--gold);
-  font-size: 13px;
-  margin-bottom: 20px;
-}
-
-.footer-grid p,
-.footer-grid a {
-  display: block;
-  color: #888;
-  font-size: 12px;
-  line-height: 2.3;
-}
-
-.footer-grid a:hover { color: var(--gold); }
-
-.copyright {
-  border-top: 1px solid #242424;
-  margin-top: 45px;
-  padding-top: 20px;
-  text-align: center;
-  color: #666;
-  font-size: 10px;
-}
-
-/* CART DRAWER */
-.cart-overlay {
-  position: fixed;
-  inset: 0;
-  background: #000a;
-  z-index: 200;
-  display: none;
-}
-
-.cart-overlay.show { display: block; }
-
-.cart-drawer {
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 100%;
-  width: min(420px, 100%);
-  background: #111;
-  padding: 28px;
-  overflow-y: auto;
-  border-left: 1px solid #554323;
-}
-
-.cart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
-
-.cart-header h2 {
-  color: var(--gold);
-  font-family: Orbitron;
-  font-size: 18px;
-}
-
-.close-cart {
-  color: white;
-  background: none;
-  border: none;
-  font-size: 25px;
-}
-
-.cart-item {
-  padding: 15px 0;
-  border-bottom: 1px solid #333;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 13px;
-}
-
-.cart-item button {
-  color: #e5b75e;
-  border: 0;
-  background: none;
-}
-
-.cart-total {
-  display: flex;
-  justify-content: space-between;
-  padding: 25px 0;
-  color: var(--gold);
-  font-weight: 700;
-}
-
-/* MOBILE */
-@media(max-width: 850px) {
-  .nav-links { display: none; }
-
-  .hero {
-    grid-template-columns: 1fr;
-    text-align: center;
-    padding-top: 130px;
-  }
-
-  .hero p { margin: 0 auto 30px; }
-
-  .hero-visual { height: 370px; }
-
-  .categories { grid-template-columns: repeat(2, 1fr); }
-
-  .product-grid { grid-template-columns: repeat(2, 1fr); }
-
-  .product-image { height: 190px; }
-
-  .footer-grid { grid-template-columns: 1fr 1fr; }
-}
-
-@media(max-width: 420px) {
-  nav { padding: 0 5%; }
-  .logo { font-size: 17px; }
-  .hero-visual { height: 300px; }
-  .product-grid { gap: 10px; }
-  .product-image { height: 155px; }
-  .product-info { padding: 12px; }
-  .product-info h3 { font-size: 12px; }
-  .category { height: 160px; padding: 15px; }
-  section { padding: 75px 5%; }
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>AffiliatePro - Android Affiliate Marketing Platform</title>
+  <meta name="description" content="Premium black & gold fintech affiliate marketing application featuring dynamic affiliate URLs, click tracking, wallet & withdrawals, referral rewards, and secret triple-tap admin console." />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Outfit, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- React 18 & ReactDOM & Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Outfit', 'sans-serif'],
+            body: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            bgDeep: '#08090C',
+            cardDark: '#15171D',
+            cardElevated: '#1C1F27',
+            goldPrimary: '#FFC928',
+            goldSecondary: '#D99B16',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #08090C;
+      color: #F3F4F6;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, .font-heading {
+      font-family: 'Outfit', sans-serif;
+    }
+    .gold-gradient-bg {
+      background: linear-gradient(135deg, #FFC928 0%, #D99B16 100%);
+    }
+    .gold-glow {
+      box-shadow: 0 0 25px -4px rgba(255, 201, 40, 0.35);
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #08090C;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #252833;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #D99B16;
+    }
+  </style>
 </head>
+<body class="bg-[#08090C] text-[#F3F4F6] selection:bg-[#FFC928]/30 selection:text-[#FFC928]">
+  <div id="root"></div>
 
-<body>
+  <!-- Standalone Application React Code -->
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, useMemo } = React;
 
-<nav>
-  <a href="#" class="logo">KK <span>FASHION</span></a>
+    // SVG Icons
+    const Icons = {
+      Home: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>,
+      TrendingUp: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>,
+      Share2: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>,
+      Wallet: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>,
+      Menu: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>,
+      Bell: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>,
+      Shield: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>,
+      ExternalLink: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>,
+      Copy: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>,
+      Check: () => <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>,
+      Search: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>,
+      X: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>,
+      Lock: () => <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>,
+      Sparkles: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>,
+      Plus: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>,
+      Trash: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>,
+    };
 
-  <ul class="nav-links">
-    <li><a href="#">HOME</a></li>
-    <li><a href="#categories">CATEGORIES</a></li>
-    <li><a href="#shop">SHOP</a></li>
-    <li><a href="#campaign">NEW ARRIVALS</a></li>
-    <li><a href="#footer">CONTACT</a></li>
-  </ul>
+    // Initial Data
+    const INITIAL_PARTNERS = [
+      {
+        id: 'partner_amazon',
+        name: 'Amazon India',
+        slug: 'amazon',
+        logo: 'https://images.unsplash.com/photo-1523474253246-64e03d526c61?w=160&auto=format&fit=crop&q=80',
+        description: 'India\'s largest online store for electronics, mobiles, fashion, home essentials & more.',
+        commissionInfo: 'Up to 10.0% Commission',
+        affiliateUrl: 'https://www.amazon.in/?tag=affiliatepro21-21&ascsubtag=AFFPRO_PORTAL',
+        status: 'active',
+        displayOrder: 1,
+        clickCount: 1420
+      },
+      {
+        id: 'partner_flipkart',
+        name: 'Flipkart',
+        slug: 'flipkart',
+        logo: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=160&auto=format&fit=crop&q=80',
+        description: 'Electronics, fashion, appliances, smart gadgets and big festive discounts.',
+        commissionInfo: 'Up to 12.0% Commission',
+        affiliateUrl: 'https://www.flipkart.com/?affid=affiliatepro&affExtParam1=AFFPRO_TRACK',
+        status: 'active',
+        displayOrder: 2,
+        clickCount: 980
+      },
+      {
+        id: 'partner_myntra',
+        name: 'Myntra',
+        slug: 'myntra',
+        logo: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=160&auto=format&fit=crop&q=80',
+        description: 'Premier fashion destination for top lifestyle brands, sportswear & apparel.',
+        commissionInfo: 'Up to 15.0% Commission',
+        affiliateUrl: 'https://www.myntra.com/?utm_source=affiliate&utm_medium=affiliatepro',
+        status: 'active',
+        displayOrder: 3,
+        clickCount: 760
+      },
+      {
+        id: 'partner_ajio',
+        name: 'Ajio Luxe & Trends',
+        slug: 'ajio',
+        logo: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=160&auto=format&fit=crop&q=80',
+        description: 'Trendy clothing, indie collections, international luxury brands and footwear.',
+        commissionInfo: 'Up to 14.5% Commission',
+        affiliateUrl: 'https://www.ajio.com/?utm_source=affiliatepro_media&utm_campaign=pro_gold',
+        status: 'active',
+        displayOrder: 4,
+        clickCount: 540
+      },
+      {
+        id: 'partner_meesho',
+        name: 'Meesho',
+        slug: 'meesho',
+        logo: 'https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?w=160&auto=format&fit=crop&q=80',
+        description: 'Wholesale prices for ethnic wear, kitchenware, accessories & everyday items.',
+        commissionInfo: 'Up to 18.0% Commission',
+        affiliateUrl: 'https://www.meesho.com/?referrer=affiliatepro_partner_in',
+        status: 'active',
+        displayOrder: 5,
+        clickCount: 420
+      }
+    ];
 
-  <div class="nav-actions">
-    <button onclick="document.getElementById('search').focus()">⌕</button>
-    <button onclick="openCart()">♧<span class="cart-count" id="cart-count">0</span></button>
-  </div>
-</nav>
+    const INITIAL_OFFERS = [
+      {
+        id: 'offer_1',
+        title: 'Samsung Galaxy S24 Ultra (512GB Titanium Black)',
+        description: 'Galaxy AI with Snapdragon 8 Gen 3, 200MP Quad Camera, Dynamic AMOLED 2X.',
+        imageUrl: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&auto=format&fit=crop&q=80',
+        partnerId: 'partner_amazon',
+        partnerName: 'Amazon India',
+        originalPrice: 139999,
+        discountedPrice: 112999,
+        discountPercent: 19,
+        commissionRate: '4.5% (₹5,084)',
+        affiliateUrl: 'https://www.amazon.in/dp/B0CS5XW9G9?tag=affiliatepro21-21',
+        category: 'Electronics',
+        isTrending: true,
+        isBestDeal: true,
+        status: 'active'
+      },
+      {
+        id: 'offer_2',
+        title: 'Apple MacBook Air 15-inch M3 Chip (16GB RAM, 512GB SSD)',
+        description: 'Liquid Retina display with 500 nits, MagSafe charging, up to 18 hours battery life.',
+        imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&auto=format&fit=crop&q=80',
+        partnerId: 'partner_flipkart',
+        partnerName: 'Flipkart',
+        originalPrice: 154900,
+        discountedPrice: 128990,
+        discountPercent: 16,
+        commissionRate: '3.8% (₹4,901)',
+        affiliateUrl: 'https://www.flipkart.com/apple-macbook-air-m3/p/itm123?affid=affiliatepro',
+        category: 'Electronics',
+        isTrending: true,
+        isBestDeal: false,
+        status: 'active'
+      },
+      {
+        id: 'offer_3',
+        title: 'Nike Air Max 270 React Running Shoes - Triple Black',
+        description: 'Large Air Max unit in the heel and soft Nike React foam for unmatched daily cushioning.',
+        imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
+        partnerId: 'partner_myntra',
+        partnerName: 'Myntra',
+        originalPrice: 14995,
+        discountedPrice: 8997,
+        discountPercent: 40,
+        commissionRate: '11.0% (₹989)',
+        affiliateUrl: 'https://www.myntra.com/shoes/nike/nike-air-max-270?utm_source=affiliatepro',
+        category: 'Shoes',
+        isTrending: true,
+        isBestDeal: true,
+        status: 'active'
+      }
+    ];
 
-<!-- HERO -->
-<header class="hero">
-  <div class="hero-content">
-    <div class="eyebrow">THE FUTURE OF STREETWEAR</div>
-    <h1>DEFINE<br>YOUR <span>STYLE.</span></h1>
-    <p>
-      Discover the latest streetwear collection.
-      Premium looks, bold designs and a style
-      that speaks before you do.
-    </p>
-    <a href="#shop" class="gold-btn">EXPLORE COLLECTION ↗</a>
-  </div>
+    const INITIAL_USER = {
+      id: 'user_kasif',
+      name: 'Kasif Bhai',
+      email: 'kasifbhaityu568@gmail.com',
+      phoneNumber: '+91 98765 43210',
+      role: 'admin',
+      referralCode: 'GOLD-KASIF-782',
+      walletBalance: 12450,
+      pendingBalance: 3200,
+      totalEarnings: 28650,
+      totalClicks: 284,
+      totalReferrals: 14
+    };
 
-  <div class="hero-visual">
-    <canvas id="three-scene"></canvas>
-    <div class="hero-label">KK / FUTURE COLLECTION</div>
-  </div>
-</header>
+    function App() {
+      // Core state
+      const [partners, setPartners] = useState(() => JSON.parse(localStorage.getItem('ap_partners')) || INITIAL_PARTNERS);
+      const [offers, setOffers] = useState(() => JSON.parse(localStorage.getItem('ap_offers')) || INITIAL_OFFERS);
+      const [currentUser, setCurrentUser] = useState(() => JSON.parse(localStorage.getItem('ap_user')) || INITIAL_USER);
+      const [withdrawals, setWithdrawals] = useState(() => JSON.parse(localStorage.getItem('ap_withdrawals')) || [
+        { id: 'w1', amount: 5000, method: 'UPI', details: 'kasifbhai@okaxis', status: 'paid', date: '2026-10-20' },
+        { id: 'w2', amount: 4500, method: 'UPI', details: 'kasifbhai@okaxis', status: 'pending', date: '2026-11-08' }
+      ]);
+      const [activeTab, setActiveTab] = useState('home');
+      const [deviceView, setDeviceView] = useState('phone'); // 'phone' or 'fullscreen'
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedCategory, setSelectedCategory] = useState('All');
 
-<!-- CATEGORIES -->
-<section id="categories">
-  <div class="section-heading">
-    <small>EXPLORE YOUR STYLE</small>
-    <h2>SHOP BY CATEGORY</h2>
-    <p>Find your signature look.</p>
-  </div>
+      // Modals
+      const [customTab, setCustomTab] = useState({ open: false, url: '', title: '' });
+      const [showAdminLogin, setShowAdminLogin] = useState(false);
+      const [isAdmin, setIsAdmin] = useState(false);
+      const [showShareModal, setShowShareModal] = useState(false);
+      const [selectedOffer, setSelectedOffer] = useState(null);
 
-  <div class="categories">
-    <div class="category" onclick="selectCategory('Oversized T-Shirt')">
-      <h3>OVERSIZED</h3><span>T-SHIRTS</span>
-    </div>
-    <div class="category" onclick="selectCategory('Shirts')">
-      <h3>PREMIUM</h3><span>SHIRTS</span>
-    </div>
-    <div class="category" onclick="selectCategory('Baggy Jeans')">
-      <h3>BAGGY</h3><span>JEANS</span>
-    </div>
-    <div class="category" onclick="selectCategory('Regular T-Shirt')">
-      <h3>REGULAR</h3><span>T-SHIRTS</span>
-    </div>
-    <div class="category" onclick="selectCategory('Shoes')">
-      <h3>STREET</h3><span>SHOES</span>
-    </div>
-  </div>
-</section>
+      // Secret Triple Tap on Logo
+      const [taps, setTaps] = useState([]);
 
-<!-- SHOP -->
-<section class="shop" id="shop">
-  <div class="section-heading">
-    <small>CURATED FOR YOU</small>
-    <h2>FEATURED COLLECTION</h2>
-    <p>Upgrade your everyday wardrobe.</p>
-  </div>
+      const handleLogoTap = () => {
+        const now = Date.now();
+        const recent = [...taps, now].filter(t => now - t < 1500);
+        setTaps(recent);
+        if (recent.length >= 3) {
+          setTaps([]);
+          setShowAdminLogin(true);
+        }
+      };
 
-  <div class="shop-tools">
-    <div class="filters">
-      <button class="filter-btn active" onclick="filterProducts('All',this)">ALL</button>
-      <button class="filter-btn" onclick="filterProducts('Oversized T-Shirt',this)">OVERSIZED</button>
-      <button class="filter-btn" onclick="filterProducts('Shirts',this)">SHIRTS</button>
-      <button class="filter-btn" onclick="filterProducts('Baggy Jeans',this)">JEANS</button>
-      <button class="filter-btn" onclick="filterProducts('Shoes',this)">SHOES</button>
-    </div>
+      // Outbound Affiliate Link Opener
+      const openAffiliateLink = (url, title, partnerId, offerId) => {
+        // Track click
+        if (partnerId) {
+          setPartners(prev => prev.map(p => p.id === partnerId ? { ...p, clickCount: p.clickCount + 1 } : p));
+        }
+        if (currentUser) {
+          setCurrentUser(prev => ({ ...prev, totalClicks: prev.totalClicks + 1 }));
+        }
+        setCustomTab({ open: true, url, title });
+      };
 
-    <input id="search" class="search-box" placeholder="Search products..." oninput="renderProducts()">
-  </div>
+      // Save on change
+      useEffect(() => { localStorage.setItem('ap_partners', JSON.stringify(partners)); }, [partners]);
+      useEffect(() => { localStorage.setItem('ap_offers', JSON.stringify(offers)); }, [offers]);
+      useEffect(() => { localStorage.setItem('ap_user', JSON.stringify(currentUser)); }, [currentUser]);
+      useEffect(() => { localStorage.setItem('ap_withdrawals', JSON.stringify(withdrawals)); }, [withdrawals]);
 
-  <div class="product-grid" id="product-grid"></div>
-</section>
+      return (
+        <div className="min-h-screen bg-[#050608] text-[#F3F4F6] flex flex-col items-center">
+          
+          {/* Top Control Bar */}
+          <div className="w-full bg-[#0E1015] border-b border-white/[0.08] px-4 py-2 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#FFC928]"></span>
+              <span className="font-bold font-display text-white">AffiliatePro</span>
+              <span className="text-zinc-500 hidden sm:inline">• Standalone Complete Edition</span>
+            </div>
 
-<!-- CAMPAIGN -->
-<section class="campaign" id="campaign">
-  <small class="eyebrow">NEW SEASON / NEW ENERGY</small>
-  <h2>OWN YOUR LOOK.</h2>
-  <p>Don't follow the trend. Create your own identity.</p>
-  <a href="#shop" class="gold-btn">SHOP THE COLLECTION ↗</a>
-</section>
+            <div className="flex items-center gap-2">
+              {/* Simulate Triple Tap button */}
+              <button 
+                onClick={() => { handleLogoTap(); handleLogoTap(); handleLogoTap(); }}
+                className="px-2.5 py-1 rounded-md bg-[#FFC928]/15 border border-[#FFC928]/40 text-[#FFC928] font-bold text-[11px] flex items-center gap-1 hover:bg-[#FFC928]/25"
+                title="Triple tap logo or click here"
+              >
+                <Icons.Sparkles />
+                <span>Secret 3-Tap Admin</span>
+              </button>
 
-<!-- FOOTER -->
-<footer id="footer">
-  <div class="footer-grid">
-    <div>
-      <a href="#" class="logo">KK FASHION</a>
-      <p style="margin-top:20px;max-width:260px">
-        Your destination for modern streetwear.
-        Express yourself with confidence.
-      </p>
-    </div>
+              <button 
+                onClick={() => setDeviceView(deviceView === 'phone' ? 'fullscreen' : 'phone')}
+                className="px-2.5 py-1 rounded-md bg-[#1C1F27] border border-white/10 text-zinc-300 hover:text-white"
+              >
+                {deviceView === 'phone' ? 'Full View' : 'Phone Frame'}
+              </button>
+            </div>
+          </div>
 
-    <div>
-      <h3>QUICK LINKS</h3>
-      <a href="#">Home</a>
-      <a href="#shop">Shop</a>
-      <a href="#categories">Categories</a>
-      <a href="#campaign">New Arrivals</a>
-    </div>
+          {/* App Body (Titanium Phone Frame or Expansive Canvas) */}
+          <div className={deviceView === 'phone' ? 'py-6 px-2 w-full max-w-[430px]' : 'w-full max-w-6xl'}>
+            <div className={deviceView === 'phone' ? 'relative w-full h-[890px] bg-[#08090C] rounded-[44px] border-[10px] border-[#20232C] shadow-2xl overflow-hidden flex flex-col ring-1 ring-white/10' : 'w-full bg-[#08090C] min-h-[90vh] flex flex-col'}>
+              
+              {/* Phone Status Bar */}
+              {deviceView === 'phone' && (
+                <div className="h-9 px-6 bg-[#08090C] flex items-center justify-between text-[11px] text-zinc-400 select-none">
+                  <span className="font-bold text-white">9:41</span>
+                  <div className="w-4 h-4 rounded-full bg-black border border-zinc-800 flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-900" />
+                  </div>
+                  <span className="text-[#FFC928] font-bold">5G 98%</span>
+                </div>
+              )}
 
-    <div>
-      <h3>INFORMATION</h3>
-      <a href="#">About Us</a>
-      <a href="#">Shipping Policy</a>
-      <a href="#">Return Policy</a>
-      <a href="#">Privacy Policy</a>
-    </div>
+              {/* App Header with Triple-Tap Gesture */}
+              <header className="sticky top-0 z-30 bg-[#08090C]/90 backdrop-blur-md border-b border-white/[0.08] px-4 py-2.5 flex items-center justify-between">
+                <div 
+                  onClick={handleLogoTap} 
+                  className="flex items-center gap-2 cursor-pointer select-none group active:scale-95 transition-transform"
+                  title="Triple tap logo to access Secret Admin Panel"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#8C6207] via-[#FFC928] to-[#FFF2B2] p-[1.5px] shadow-lg shadow-[#FFC928]/20">
+                    <div className="w-full h-full bg-[#121419] rounded-[10px] flex items-center justify-center font-display font-extrabold text-base text-[#FFC928]">
+                      AP
+                    </div>
+                  </div>
+                  <div>
+                    <h1 className="font-display font-bold text-base text-white leading-tight">
+                      Affiliate<span className="text-[#FFC928]">Pro</span>
+                    </h1>
+                    <span className="text-[10px] text-zinc-400 block -mt-0.5">Earn More • Grow Faster</span>
+                  </div>
+                </div>
 
-    <div>
-      <h3>CONNECT</h3>
-      <a href="https://www.instagram.com/" target="_blank">Instagram ↗</a>
-      <a href="https://wa.me/" target="_blank">WhatsApp ↗</a>
-      <a href="https://www.youtube.com/" target="_blank">YouTube ↗</a>
-      <p>Kota, Rajasthan, India</p>
-    </div>
-  </div>
+                {/* Header Actions */}
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => setActiveTab('wallet')}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#15171D] border border-[#FFC928]/30 hover:border-[#FFC928] text-xs font-bold text-[#FFC928]"
+                  >
+                    <Icons.Wallet />
+                    <span>₹{currentUser.walletBalance.toLocaleString()}</span>
+                  </button>
 
-  <div class="copyright">
-    © 2026 KK FASHION. ALL RIGHTS RESERVED.
-    <br><br>YOUR STYLE. YOUR RULES.
-  </div>
-</footer>
+                  {isAdmin && (
+                    <button 
+                      onClick={() => setActiveTab('admin')}
+                      className="px-2 py-1 rounded bg-[#FFC928] text-[#08090C] text-xs font-bold"
+                    >
+                      Admin
+                    </button>
+                  )}
+                </div>
+              </header>
 
-<!-- CART -->
-<div class="cart-overlay" id="cart-overlay" onclick="overlayClose(event)">
-  <div class="cart-drawer">
-    <div class="cart-header">
-      <h2>YOUR CART</h2>
-      <button class="close-cart" onclick="closeCart()">×</button>
-    </div>
-    <div id="cart-items"></div>
-    <div class="cart-total">
-      <span>TOTAL</span>
-      <span id="cart-total">₹0</span>
-    </div>
-    <button class="gold-btn" style="width:100%" onclick="checkout()">
-      PROCEED TO CHECKOUT
-    </button>
-  </div>
-</div>
+              {/* Scrollable Main Area */}
+              <main className="flex-1 overflow-y-auto p-4 space-y-5 pb-24">
+                
+                {/* TAB: HOME */}
+                {activeTab === 'home' && (
+                  <div className="space-y-5">
+                    {/* Banner Carousel Card */}
+                    <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-xl bg-[#15171D] h-44 cursor-pointer" onClick={() => openAffiliateLink('https://www.amazon.in/?tag=affiliatepro21-21', 'Festive Super Sale')}>
+                      <img src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#08090C] via-[#08090C]/50 to-transparent" />
+                      <div className="absolute bottom-3 left-4 right-4">
+                        <span className="text-[10px] font-bold text-[#FFC928] uppercase tracking-wider bg-black/60 px-2 py-0.5 rounded">Mega Sale Active</span>
+                        <h2 className="font-display font-extrabold text-lg text-white mt-1">Festive Electronics Super Sale</h2>
+                        <p className="text-xs text-zinc-300">Flat 45% Off + Extra 8% Cash Reward</p>
+                      </div>
+                    </div>
 
-<script>
-// PRODUCT DATA
-// These are demo products. Replace them with actual products later.
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="p-3 rounded-2xl bg-[#15171D] border border-white/[0.08]">
+                        <span className="text-[10px] text-zinc-400 font-semibold block">Total Clicks</span>
+                        <span className="text-xl font-extrabold text-white font-display">{currentUser.totalClicks}</span>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-[#15171D] border border-white/[0.08]">
+                        <span className="text-[10px] text-zinc-400 font-semibold block">Referrals</span>
+                        <span className="text-xl font-extrabold text-white font-display">{currentUser.totalReferrals}</span>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-[#15171D] border border-[#FFC928]/30">
+                        <span className="text-[10px] text-zinc-400 font-semibold block">Total Earnings</span>
+                        <span className="text-xl font-extrabold text-[#FFC928] font-display">₹{currentUser.totalEarnings.toLocaleString()}</span>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-[#15171D] border border-white/[0.08]">
+                        <span className="text-[10px] text-zinc-400 font-semibold block">Available Wallet</span>
+                        <span className="text-xl font-extrabold text-white font-display">₹{currentUser.walletBalance.toLocaleString()}</span>
+                      </div>
+                    </div>
 
-const products = [
-  {id:1,name:"Urban Oversized Tee",category:"Oversized T-Shirt",price:799,old:1199},
-  {id:2,name:"Premium Black Shirt",category:"Shirts",price:999,old:1499},
-  {id:3,name:"Street Baggy Jeans",category:"Baggy Jeans",price:1299,old:1799},
-  {id:4,name:"Classic Regular Tee",category:"Regular T-Shirt",price:499,old:799},
-  {id:5,name:"Golden Street Sneakers",category:"Shoes",price:1599,old:2199},
-  {id:6,name:"Minimal Oversized Tee",category:"Oversized T-Shirt",price:849,old:1199},
-  {id:7,name:"Casual Premium Shirt",category:"Shirts",price:1099,old:1599},
-  {id:8,name:"Dark Wash Baggy Jeans",category:"Baggy Jeans",price:1399,old:1899}
-];
+                    {/* Partner Section (Amazon, Flipkart, Myntra, Ajio, Meesho) */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <h3 className="font-display font-bold text-base text-white">Affiliate Partner Stores</h3>
+                        <span className="text-[11px] text-[#FFC928] font-bold">Admin Verified URLs</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {partners.map(p => (
+                          <div key={p.id} className="p-3 rounded-2xl bg-[#15171D] border border-white/[0.08] hover:border-[#FFC928]/40 flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <img src={p.logo} className="w-8 h-8 rounded-lg object-cover" />
+                                <div className="min-w-0">
+                                  <h4 className="font-bold text-xs text-white truncate">{p.name}</h4>
+                                  <span className="text-[10px] text-[#FFC928] font-semibold block">{p.commissionInfo}</span>
+                                </div>
+                              </div>
+                              <p className="text-[10px] text-zinc-400 line-clamp-2">{p.description}</p>
+                            </div>
+                            <button
+                              onClick={() => openAffiliateLink(p.affiliateUrl, p.name, p.id)}
+                              className="mt-3 w-full py-1.5 rounded-xl bg-[#252833] hover:bg-[#FFC928] hover:text-[#08090C] text-xs font-bold text-zinc-200 transition-colors flex items-center justify-center gap-1"
+                            >
+                              <span>Open Store</span>
+                              <Icons.ExternalLink />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-let activeCategory = "All";
-let cart = [];
+                    {/* Top Deals */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <h3 className="font-display font-bold text-base text-white">Trending Deals</h3>
+                        <button onClick={() => setActiveTab('offers')} className="text-xs text-[#FFC928] font-semibold">View All</button>
+                      </div>
+                      <div className="space-y-2.5">
+                        {offers.map(o => (
+                          <div key={o.id} onClick={() => setSelectedOffer(o)} className="p-2.5 rounded-2xl bg-[#15171D] border border-white/[0.08] flex items-center gap-3 cursor-pointer hover:border-[#FFC928]/30">
+                            <img src={o.imageUrl} className="w-16 h-16 rounded-xl object-cover" />
+                            <div className="flex-1 min-w-0">
+                              <span className="text-[10px] font-bold text-[#FFC928]">{o.discountPercent}% OFF • {o.partnerName}</span>
+                              <h4 className="font-bold text-xs text-white truncate">{o.title}</h4>
+                              <div className="flex items-baseline gap-2 mt-0.5">
+                                <span className="font-bold text-sm text-white">₹{o.discountedPrice.toLocaleString()}</span>
+                                <span className="text-[10px] text-zinc-400 line-through">₹{o.originalPrice.toLocaleString()}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-function renderProducts() {
-  const grid = document.getElementById("product-grid");
-  const search = document.getElementById("search").value.toLowerCase();
+                {/* TAB: EARNINGS */}
+                {activeTab === 'earnings' && (
+                  <div className="space-y-4">
+                    <h2 className="font-display font-bold text-xl text-white">Earnings & Commissions</h2>
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1C1F27] to-[#15171D] border border-[#FFC928]/30">
+                      <span className="text-[10px] text-zinc-400 font-semibold uppercase">Total Confirmed</span>
+                      <div className="text-3xl font-extrabold text-[#FFC928] font-display mt-0.5">₹{currentUser.totalEarnings.toLocaleString()}</div>
+                      <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-white/[0.08] text-xs">
+                        <div>
+                          <span className="text-zinc-400 text-[10px] block">Pending Verification</span>
+                          <span className="font-bold text-amber-400">₹{currentUser.pendingBalance.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-zinc-400 text-[10px] block">Available in Wallet</span>
+                          <span className="font-bold text-emerald-400">₹{currentUser.walletBalance.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
 
-  const filtered = products.filter(p =>
-    (activeCategory === "All" || p.category === activeCategory) &&
-    p.name.toLowerCase().includes(search)
-  );
+                    <div className="space-y-2">
+                      <h3 className="font-bold text-xs text-white uppercase tracking-wider">Recent Transactions</h3>
+                      <div className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
+                        <div>
+                          <span className="font-bold text-white block">Samsung S24 Ultra Sale</span>
+                          <span className="text-[10px] text-zinc-400">Amazon India Commission</span>
+                        </div>
+                        <span className="font-bold text-[#FFC928]">+₹5,084</span>
+                      </div>
+                      <div className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
+                        <div>
+                          <span className="font-bold text-white block">Referral Bonus: Rohit</span>
+                          <span className="text-[10px] text-zinc-400">New user activation</span>
+                        </div>
+                        <span className="font-bold text-[#FFC928]">+₹250</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-  grid.innerHTML = filtered.map(p => `
-    <article class="product-card">
-      <div class="product-image">
-        <div class="product-placeholder">KK</div>
-      </div>
-      <div class="product-info">
-        <small>${p.category.toUpperCase()}</small>
-        <h3>${p.name}</h3>
-        <span class="price">₹${p.price}</span>
-        <span class="old-price">₹${p.old}</span>
-        <button class="add-btn" onclick="addToCart(${p.id})">
-          ADD TO CART +
-        </button>
-      </div>
-    </article>
-  `).join("");
+                {/* TAB: WALLET */}
+                {activeTab === 'wallet' && (
+                  <div className="space-y-4">
+                    <h2 className="font-display font-bold text-xl text-white">Affiliate Wallet & Payout</h2>
+                    <div className="p-4 rounded-2xl bg-[#15171D] border border-[#FFC928]/30">
+                      <span className="text-xs text-zinc-400">Available Balance</span>
+                      <div className="text-3xl font-extrabold text-[#FFC928] font-display">₹{currentUser.walletBalance.toLocaleString()}</div>
+                    </div>
 
-  if (!filtered.length) {
-    grid.innerHTML = "<p>No products found.</p>";
-  }
-}
+                    {/* Withdrawal Form */}
+                    <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
+                      <h3 className="font-bold text-sm text-white">Request Payout</h3>
+                      <div>
+                        <label className="text-[11px] text-zinc-400 block mb-1">Amount (₹)</label>
+                        <input id="wdrAmount" type="number" defaultValue="2000" className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs font-bold" />
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-zinc-400 block mb-1">UPI ID or Bank Details</label>
+                        <input id="wdrUpi" type="text" defaultValue="kasifbhai@okaxis" className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs font-mono" />
+                      </div>
+                      <button 
+                        onClick={() => {
+                          const amt = Number(document.getElementById('wdrAmount').value);
+                          const upi = document.getElementById('wdrUpi').value;
+                          if (amt > currentUser.walletBalance) {
+                            alert('Insufficient available balance!');
+                            return;
+                          }
+                          setCurrentUser(prev => ({ ...prev, walletBalance: prev.walletBalance - amt, pendingBalance: prev.pendingBalance + amt }));
+                          setWithdrawals(prev => [{ id: 'w_' + Date.now(), amount: amt, method: 'UPI', details: upi, status: 'pending', date: 'Just now' }, ...prev]);
+                          confetti();
+                          alert('Withdrawal request submitted for admin review!');
+                        }}
+                        className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] text-xs font-bold hover:bg-[#D99B16]"
+                      >
+                        Submit Withdrawal Request
+                      </button>
+                    </div>
 
-function filterProducts(category, button) {
-  activeCategory = category;
-  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-  button.classList.add("active");
-  renderProducts();
-}
+                    {/* Withdrawal History */}
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-xs text-white">Withdrawal History</h4>
+                      {withdrawals.map(w => (
+                        <div key={w.id} className="p-3 rounded-xl bg-[#15171D] border border-white/[0.06] flex items-center justify-between text-xs">
+                          <div>
+                            <span className="font-bold text-white block">₹{w.amount.toLocaleString()} via {w.method}</span>
+                            <span className="text-[10px] text-zinc-400 font-mono">{w.details}</span>
+                          </div>
+                          <span className={'px-2 py-0.5 rounded text-[10px] font-bold uppercase ' + (w.status === 'paid' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400')}>
+                            {w.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-function selectCategory(category) {
-  activeCategory = category;
-  document.getElementById("shop").scrollIntoView({behavior:"smooth"});
+                {/* TAB: OFFERS */}
+                {activeTab === 'offers' && (
+                  <div className="space-y-4">
+                    <h2 className="font-display font-bold text-xl text-white">All Deals & Offers</h2>
+                    <input 
+                      type="text" 
+                      value={searchQuery} 
+                      onChange={e => setSearchQuery(e.target.value)} 
+                      placeholder="Search deals, brands, products..." 
+                      className="w-full px-3 py-2 rounded-xl bg-[#15171D] border border-white/10 text-xs text-white placeholder:text-zinc-500"
+                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {offers.filter(o => o.title.toLowerCase().includes(searchQuery.toLowerCase())).map(o => (
+                        <div key={o.id} onClick={() => setSelectedOffer(o)} className="rounded-2xl bg-[#15171D] border border-white/[0.08] p-3 cursor-pointer hover:border-[#FFC928]/40">
+                          <img src={o.imageUrl} className="w-full h-32 object-cover rounded-xl mb-2" />
+                          <span className="text-[10px] text-[#FFC928] font-bold">{o.discountPercent}% OFF • {o.partnerName}</span>
+                          <h4 className="font-bold text-xs text-white truncate mt-0.5">{o.title}</h4>
+                          <div className="flex items-baseline justify-between mt-2">
+                            <span className="font-extrabold text-sm text-white">₹{o.discountedPrice.toLocaleString()}</span>
+                            <span className="text-xs font-bold text-[#FFC928]">Earn {o.commissionRate}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-  document.querySelectorAll(".filter-btn").forEach(b => {
-    b.classList.toggle("active", b.textContent.trim().toLowerCase() ===
-      (category === "Oversized T-Shirt" ? "oversized" :
-       category === "Baggy Jeans" ? "jeans" :
-       category === "Shirts" ? "shirts" :
-       category === "Shoes" ? "shoes" : "all"));
-  });
+                {/* TAB: MORE */}
+                {activeTab === 'more' && (
+                  <div className="space-y-3">
+                    <h2 className="font-display font-bold text-xl text-white">More Options</h2>
+                    <button onClick={() => setShowShareModal(true)} className="w-full p-3 rounded-2xl bg-[#15171D] border border-white/[0.08] flex items-center justify-between text-xs text-white font-bold">
+                      <span>Referral Link & Rewards</span>
+                      <Icons.Share2 />
+                    </button>
+                    <button onClick={() => setShowAdminLogin(true)} className="w-full p-3 rounded-2xl bg-[#15171D] border border-[#FFC928]/30 flex items-center justify-between text-xs text-[#FFC928] font-bold">
+                      <span>Administrator Login</span>
+                      <Icons.Shield />
+                    </button>
+                  </div>
+                )}
 
-  renderProducts();
-}
+                {/* TAB: ADMIN (12 Modules) */}
+                {activeTab === 'admin' && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h2 className="font-display font-bold text-xl text-white">Admin Management</h2>
+                      <button onClick={() => setActiveTab('home')} className="text-xs text-[#FFC928] font-bold">Back to App</button>
+                    </div>
 
-function addToCart(id) {
-  const product = products.find(p => p.id === id);
-  const existing = cart.find(item => item.id === id);
+                    {/* Partner Management (CRITICAL DYNAMIC URL CONTROL) */}
+                    <div className="p-4 rounded-2xl bg-[#15171D] border border-[#FFC928]/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-sm text-white">Partner Management (Dynamic URLs)</h3>
+                        <button 
+                          onClick={() => {
+                            const name = prompt('Partner Name (e.g. Croma):');
+                            const url = prompt('Exact Affiliate URL:');
+                            if (name && url) {
+                              setPartners(prev => [...prev, { id: 'p_' + Date.now(), name, affiliateUrl: url, commissionInfo: 'Up to 10%', logo: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=160', description: 'Partner network', clickCount: 0 }]);
+                            }
+                          }}
+                          className="px-2 py-1 rounded bg-[#FFC928] text-[#08090C] text-[10px] font-bold"
+                        >
+                          + Add Partner
+                        </button>
+                      </div>
 
-  if (existing) existing.qty++;
-  else cart.push({...product, qty:1});
+                      <div className="space-y-2">
+                        {partners.map(p => (
+                          <div key={p.id} className="p-2.5 rounded-xl bg-[#08090C] border border-white/[0.08] space-y-1 text-xs">
+                            <div className="flex justify-between font-bold text-white">
+                              <span>{p.name}</span>
+                              <span className="text-[#FFC928]">{p.clickCount} Clicks</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <input 
+                                type="text" 
+                                value={p.affiliateUrl} 
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  setPartners(prev => prev.map(item => item.id === p.id ? { ...item, affiliateUrl: val } : item));
+                                }}
+                                className="flex-1 px-2 py-1 rounded bg-[#15171D] border border-white/10 text-[10px] font-mono text-[#FFC928]"
+                              />
+                              <button 
+                                onClick={() => {
+                                  setPartners(prev => prev.filter(item => item.id !== p.id));
+                                }}
+                                className="text-rose-400 p-1"
+                              >
+                                <Icons.Trash />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-  updateCart();
-}
+                    {/* Pending Withdrawals Approval Desk */}
+                    <div className="p-4 rounded-2xl bg-[#15171D] border border-white/[0.08] space-y-3">
+                      <h3 className="font-bold text-sm text-white">Pending Withdrawals Desk</h3>
+                      {withdrawals.filter(w => w.status === 'pending').map(w => (
+                        <div key={w.id} className="p-3 rounded-xl bg-[#08090C] border border-white/[0.06] flex items-center justify-between text-xs">
+                          <div>
+                            <span className="font-bold text-white block">₹{w.amount.toLocaleString()}</span>
+                            <span className="text-[10px] text-zinc-400 font-mono">{w.details}</span>
+                          </div>
+                          <div className="flex gap-1.5">
+                            <button 
+                              onClick={() => {
+                                setWithdrawals(prev => prev.map(item => item.id === w.id ? { ...item, status: 'paid' } : item));
+                                setCurrentUser(prev => ({ ...prev, pendingBalance: Math.max(0, prev.pendingBalance - w.amount) }));
+                                alert('Withdrawal marked as PAID!');
+                              }}
+                              className="px-2.5 py-1 rounded bg-emerald-500 text-[#08090C] font-bold text-[10px]"
+                            >
+                              Approve & Pay
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {withdrawals.filter(w => w.status === 'pending').length === 0 && (
+                        <p className="text-xs text-zinc-500">No pending requests.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </main>
 
-function updateCart() {
-  const count = cart.reduce((sum,item) => sum + item.qty,0);
-  const total = cart.reduce((sum,item) => sum + item.price * item.qty,0);
+              {/* Fixed 5-Item Bottom Navigation Bar */}
+              <nav className="absolute bottom-0 left-0 right-0 h-16 bg-[#08090C]/95 backdrop-blur-md border-t border-white/[0.08] flex items-center justify-around px-2 z-40">
+                <button onClick={() => setActiveTab('home')} className={'flex flex-col items-center ' + (activeTab === 'home' ? 'text-[#FFC928]' : 'text-zinc-500')}>
+                  <Icons.Home />
+                  <span className="text-[9px] font-bold mt-1">Home</span>
+                </button>
+                <button onClick={() => setActiveTab('earnings')} className={'flex flex-col items-center ' + (activeTab === 'earnings' ? 'text-[#FFC928]' : 'text-zinc-500')}>
+                  <Icons.TrendingUp />
+                  <span className="text-[9px] font-bold mt-1">Earnings</span>
+                </button>
+                {/* Center Elevated Share Button */}
+                <div className="-mt-6">
+                  <button onClick={() => setShowShareModal(true)} className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#8C6207] via-[#FFC928] to-[#FFF2B2] p-[2px] shadow-lg shadow-[#FFC928]/40 flex items-center justify-center">
+                    <div className="w-full h-full rounded-full bg-[#15171D] flex items-center justify-center text-[#FFC928]">
+                      <Icons.Share2 />
+                    </div>
+                  </button>
+                </div>
+                <button onClick={() => setActiveTab('wallet')} className={'flex flex-col items-center ' + (activeTab === 'wallet' ? 'text-[#FFC928]' : 'text-zinc-500')}>
+                  <Icons.Wallet />
+                  <span className="text-[9px] font-bold mt-1">Wallet</span>
+                </button>
+                <button onClick={() => setActiveTab('more')} className={'flex flex-col items-center ' + (activeTab === 'more' ? 'text-[#FFC928]' : 'text-zinc-500')}>
+                  <Icons.Menu />
+                  <span className="text-[9px] font-bold mt-1">More</span>
+                </button>
+              </nav>
 
-  document.getElementById("cart-count").textContent = count;
-  document.getElementById("cart-total").textContent = "₹" + total;
+            </div>
+          </div>
 
-  document.getElementById("cart-items").innerHTML = cart.length
-    ? cart.map(item => `
-      <div class="cart-item">
-        <div>
-          <strong>${item.name}</strong><br>
-          ₹${item.price} × ${item.qty}
+          {/* Android Custom Tabs Simulator Modal */}
+          {customTab.open && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div className="w-full max-w-md bg-[#121419] rounded-2xl border border-white/10 overflow-hidden shadow-2xl p-4 text-center space-y-4">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2 text-xs">
+                  <span className="font-bold text-white flex items-center gap-1"><Icons.Lock /> {customTab.title}</span>
+                  <button onClick={() => setCustomTab({ open: false, url: '', title: '' })} className="text-zinc-400 hover:text-white"><Icons.X /></button>
+                </div>
+                <div className="p-3 bg-[#08090C] rounded-xl text-left border border-[#FFC928]/30">
+                  <span className="text-[10px] text-zinc-400 uppercase font-semibold">Exact Admin Affiliate URL:</span>
+                  <p className="text-xs font-mono text-[#FFC928] break-all mt-1">{customTab.url}</p>
+                </div>
+                <button onClick={() => window.open(customTab.url, '_blank')} className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs">
+                  Continue to Merchant Website
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Secret Admin Login Modal */}
+          {showAdminLogin && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+              <div className="w-full max-w-sm bg-[#15171D] rounded-2xl border border-[#FFC928]/40 p-6 shadow-2xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-white text-base">Secret Admin Gateway</h3>
+                  <button onClick={() => setShowAdminLogin(false)} className="text-zinc-400"><Icons.X /></button>
+                </div>
+                <p className="text-xs text-zinc-400">Triple tap detected. Enter password to unlock admin console.</p>
+                <input id="adminPass" type="password" defaultValue="Admin@2026" className="w-full px-3 py-2 rounded-xl bg-[#08090C] border border-white/10 text-white text-xs" />
+                <button 
+                  onClick={() => {
+                    setIsAdmin(true);
+                    setShowAdminLogin(false);
+                    setActiveTab('admin');
+                    confetti();
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs"
+                >
+                  Verify & Open Admin
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Share & Referral Modal */}
+          {showShareModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div className="w-full max-w-sm bg-[#15171D] rounded-2xl border border-white/10 p-6 shadow-2xl space-y-4 text-center">
+                <h3 className="font-bold text-white text-lg">Invite & Earn ₹250</h3>
+                <p className="text-xs text-zinc-400">Share your referral code. Friends get ₹100 welcome bonus on joining!</p>
+                <div className="p-3 rounded-xl bg-[#08090C] border border-[#FFC928]/40 font-mono text-base font-bold text-[#FFC928]">
+                  {currentUser.referralCode}
+                </div>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(currentUser.referralCode);
+                    confetti();
+                    alert('Referral code copied to clipboard!');
+                    setShowShareModal(false);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs"
+                >
+                  Copy Referral Code
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Offer Details Modal */}
+          {selectedOffer && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+              <div className="w-full max-w-sm bg-[#15171D] rounded-2xl border border-white/10 overflow-hidden shadow-2xl space-y-3 p-4">
+                <img src={selectedOffer.imageUrl} className="w-full h-40 object-cover rounded-xl" />
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="text-white">{selectedOffer.title}</span>
+                  <button onClick={() => setSelectedOffer(null)} className="text-zinc-400"><Icons.X /></button>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-lg font-extrabold text-white">₹{selectedOffer.discountedPrice.toLocaleString()}</span>
+                  <span className="text-xs font-bold text-[#FFC928]">You Earn: {selectedOffer.commissionRate}</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    openAffiliateLink(selectedOffer.affiliateUrl, selectedOffer.title, selectedOffer.partnerId, selectedOffer.id);
+                    setSelectedOffer(null);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-[#FFC928] text-[#08090C] font-bold text-xs"
+                >
+                  Open Offer via {selectedOffer.partnerName}
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
-        <button onclick="removeItem(${item.id})">REMOVE</button>
-      </div>
-    `).join("")
-    : "<p style='color:#999'>Your cart is empty.</p>";
-}
+      );
+    }
 
-function removeItem(id) {
-  cart = cart.filter(item => item.id !== id);
-  updateCart();
-}
-
-function openCart() {
-  document.getElementById("cart-overlay").classList.add("show");
-}
-
-function closeCart() {
-  document.getElementById("cart-overlay").classList.remove("show");
-}
-
-function overlayClose(event) {
-  if (event.target.id === "cart-overlay") closeCart();
-}
-
-function checkout() {
-  if (!cart.length) {
-    alert("Your cart is empty!");
-    return;
-  }
-  alert("Checkout integration will be added in the next development step.");
-}
-
-// Initial render
-renderProducts();
-updateCart();
-
-// GSAP ANIMATIONS
-if (window.gsap) {
-  gsap.registerPlugin(ScrollTrigger);
-
-  gsap.from(".hero-content > *", {
-    opacity:0,
-    y:35,
-    duration:1,
-    stagger:.15,
-    ease:"power3.out"
-  });
-
-  gsap.utils.toArray(".section-heading").forEach(el => {
-    gsap.from(el, {
-      scrollTrigger:{trigger:el,start:"top 85%"},
-      opacity:0,
-      y:30,
-      duration:.8
-    });
-  });
-
-  gsap.utils.toArray(".category, .product-card").forEach(el => {
-    gsap.from(el, {
-      scrollTrigger:{trigger:el,start:"top 95%"},
-      opacity:0,
-      y:25,
-      duration:.6
-    });
-  });
-}
-
-// THREE.JS 3D HERO OBJECT
-const canvas = document.getElementById("three-scene");
-
-if (window.THREE) {
-  const scene = new THREE.Scene();
-
-  const camera = new THREE.PerspectiveCamera(
-    45,
-    canvas.clientWidth / canvas.clientHeight,
-    0.1,
-    100
-  );
-  camera.position.set(0,0,7);
-
-  const renderer = new THREE.WebGLRenderer({
-    canvas:canvas,
-    alpha:true,
-    antialias:true
-  });
-
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-  renderer.setSize(canvas.clientWidth,canvas.clientHeight,false);
-
-  const group = new THREE.Group();
-  scene.add(group);
-
-  // Floating metallic golden object
-  const geometry = new THREE.TorusKnotGeometry(1.35,.38,180,24,2,3);
-
-  const material = new THREE.MeshStandardMaterial({
-    color:0xd6ad55,
-    metalness:.85,
-    roughness:.2
-  });
-
-  const object = new THREE.Mesh(geometry,material);
-  group.add(object);
-
-  const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(2,.015,12,100),
-    new THREE.MeshBasicMaterial({
-      color:0xd6ad55,
-      transparent:true,
-      opacity:.45
-    })
-  );
-
-  ring.rotation.x = 1.1;
-  group.add(ring);
-
-  scene.add(new THREE.AmbientLight(0xffffff,1.3));
-
-  const goldLight = new THREE.PointLight(0xffc766,3,20);
-  goldLight.position.set(3,4,5);
-  scene.add(goldLight);
-
-  const whiteLight = new THREE.PointLight(0xffffff,2,20);
-  whiteLight.position.set(-4,-2,3);
-  scene.add(whiteLight);
-
-  let mouseX = 0;
-  let mouseY = 0;
-
-  window.addEventListener("pointermove", e => {
-    mouseX = (e.clientX / window.innerWidth - .5) * .6;
-    mouseY = (e.clientY / window.innerHeight - .5) * .6;
-  });
-
-  function animate() {
-    requestAnimationFrame(animate);
-
-    group.rotation.y += .004;
-    group.rotation.x += (mouseY - group.rotation.x) * .015;
-    group.rotation.z += (mouseX - group.rotation.z) * .015;
-
-    object.rotation.x += .003;
-
-    renderer.render(scene,camera);
-  }
-
-  animate();
-
-  window.addEventListener("resize", () => {
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
-
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width,height,false);
-  });
-}
-</script>
-
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
