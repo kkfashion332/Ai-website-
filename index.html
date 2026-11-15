@@ -8,10 +8,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<!-- React & Babel -->
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.4/babel.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+<!-- Firebase SDKs (Compat version for non-module script tag integration) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
 <script>
 window.addEventListener('error', function(e) {
   var el = document.getElementById('error-banner');
@@ -31,10 +38,38 @@ h1,h2,h3,h4,.font-display { font-family:'Outfit',sans-serif; }
 <div id="root"></div>
 
 <script type="text/babel">
+// === Firebase Initialization ===
+const firebaseConfig = {
+  apiKey: "AIzaSyD5qRE8B6uwDUVWdUjnKYfGHOCOOhnK1Rk",
+  authDomain: "mz-fashion-f4c8d.firebaseapp.com",
+  databaseURL: "https://mz-fashion-f4c8d-default-rtdb.firebaseio.com",
+  projectId: "mz-fashion-f4c8d",
+  storageBucket: "mz-fashion-f4c8d.firebasestorage.app",
+  messagingSenderId: "756363172587",
+  appId: "1:756363172587:web:3ea11c9b004c1bad9f7cae"
+};
+
+if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+// ===============================
+
 const { useState, useEffect, createContext, useContext } = React;
 const fireConfetti = () => { try { if (typeof confetti === 'function') confetti({ particleCount: 75, spread: 60, origin: { y: 0.6 }, colors: ['#FFC928','#D99B16','#FFFFFF'] }); } catch {} };
+
 const load = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
-const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+// Updated save function to sync data to Firestore silently without breaking logic
+const save = (k, v) => { 
+  try { 
+    localStorage.setItem(k, JSON.stringify(v)); 
+    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+      const db = firebase.firestore();
+      db.collection('affiliateProData').doc(k).set({ data: JSON.stringify(v) }).catch(() => {});
+    }
+  } catch {} 
+};
+
 const Svg = ({ d, className = "w-4 h-4", children }) => <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">{d && <path d={d}/>}{children}</svg>;
 const Icons = {
   Home: p => <Svg {...p} d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>,
@@ -153,6 +188,37 @@ const AppProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminEmail, setAdminEmail] = useState(null);
   const [taps, setTaps] = useState([]);
+
+  // Load Firestore data safely on app mount to sync across devices
+  useEffect(() => {
+    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+      const db = firebase.firestore();
+      db.collection('affiliateProData').get().then(snapshot => {
+        if (!snapshot.empty) {
+          snapshot.forEach(doc => {
+            try {
+              const parsed = JSON.parse(doc.data().data);
+              if (parsed) {
+                switch (doc.id) {
+                  case SK.CU: setCurrentUser(parsed); break;
+                  case SK.U: setUsers(parsed); break;
+                  case SK.P: setPartners(parsed); break;
+                  case SK.O: setOffers(parsed); break;
+                  case SK.B: setBanners(parsed); break;
+                  case SK.W: setWithdrawals(parsed); break;
+                  case SK.CM: setCommissions(parsed); break;
+                  case SK.C: setClicks(parsed); break;
+                  case SK.N: setNotifications(parsed); break;
+                  case SK.S: setSettings(parsed); break;
+                  case SK.A: setAuditLogs(parsed); break;
+                }
+              }
+            } catch (e) {}
+          });
+        }
+      }).catch(err => console.error("Firebase sync error: ", err));
+    }
+  }, []);
 
   useEffect(() => save(SK.CU, currentUser), [currentUser]);
   useEffect(() => save(SK.U, users), [users]);
